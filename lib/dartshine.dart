@@ -1,5 +1,3 @@
-library dartshine;
-
 export 'src/controllers/controllers.dart';
 export 'src/controllers/response.dart';
 export 'src/orm/orm.dart';
