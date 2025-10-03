@@ -93,19 +93,39 @@ class Orm {
   }
 
   Get get() {
-    return Get(tableName: tableName, dbType: dbType!);
+    if (dbType == DbType.sqlite) {
+      return Get(tableName: tableName, dbType: dbType!, sqliteDb: sqliteDb);
+    }
+
+    return Get(
+        tableName: tableName, dbType: dbType!, postgresqlDb: postgresqlDb);
   }
 
   Insert insert() {
-    return Insert(tableName: tableName, dbType: dbType!);
+    if (dbType == DbType.sqlite) {
+      return Insert(tableName: tableName, dbType: dbType!, sqliteDb: sqliteDb);
+    }
+
+    return Insert(
+        tableName: tableName, dbType: dbType!, postgresqlDb: postgresqlDb);
   }
 
   Update update() {
-    return Update(tableName: tableName, dbType: dbType!);
+    if (dbType == DbType.sqlite) {
+      return Update(tableName: tableName, dbType: dbType!, sqliteDb: sqliteDb);
+    }
+
+    return Update(
+        tableName: tableName, dbType: dbType!, postgresqlDb: postgresqlDb);
   }
 
   Delete delete() {
-    return Delete(tableName: tableName, dbType: dbType!);
+    if (dbType == DbType.sqlite) {
+      return Delete(tableName: tableName, dbType: dbType!, sqliteDb: sqliteDb);
+    }
+
+    return Delete(
+        tableName: tableName, dbType: dbType!, postgresqlDb: postgresqlDb);
   }
 }
 
