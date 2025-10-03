@@ -1,5 +1,7 @@
 import 'package:dartshine/src/orm/db_type.dart';
+import 'package:dartshine/src/orm/sql_orm_query.dart';
 import 'package:dartshine/src/orm/types.dart';
+import 'package:postgres/postgres.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 class Orm {
@@ -7,12 +9,14 @@ class Orm {
   final List<Map<String, dynamic>> fields;
   DbType? dbType;
   Database? sqliteDb;
+  Connection? postgresqlDb;
 
   Orm(
       {required this.tableName,
       required this.fields,
       DbType? databaseType,
-      this.sqliteDb}) {
+      this.sqliteDb,
+      this.postgresqlDb}) {
     if (databaseType != null) {
       dbType = databaseType;
     } else {
@@ -54,74 +58,54 @@ class Orm {
     sqliteDb?.execute(createQuery.toString());
   }
 
-  void insert({required Map<String, dynamic> datas}) {
-    StringBuffer columnInsertQuery = StringBuffer();
-    StringBuffer valueInsertQuery = StringBuffer();
+  void createPostgresqlTable() {
+    final StringBuffer createQuery = StringBuffer();
 
-    columnInsertQuery.write('INSERT INTO $tableName (');
-    valueInsertQuery.write('VALUES (');
+    createQuery.write('CREATE TABLE IF NOT EXISTS $tableName (');
 
-    List<MapEntry<String, dynamic>> dataToList = datas.entries.toList();
+    for (int i = 0; i < fields.length; i++) {
+      Map<String, dynamic> field = fields[i];
 
-    for (int i = 0; i < datas.length; i++) {
-      MapEntry<String, dynamic> data = dataToList[i];
-
-      columnInsertQuery.write(data.key);
-
-      if (data.value is String) {
-        valueInsertQuery.write("'${data.value}'");
-      } else if (data.value is int) {
-        valueInsertQuery.write(data.value.toString());
+      if (field['field_name'] is String) {
+        createQuery.write("${field['field_name']} ");
       }
 
-      if (i < datas.length - 1) {
-        columnInsertQuery.write(',');
-        valueInsertQuery.write(',');
+      if (field['type'] is OrmTypes) {
+        createQuery.write("${ormTypeToString(field['type'])} ");
+      }
+
+      if (field['primary_key'] == true) {
+        createQuery.write('PRIMARY KEY ');
+      }
+
+      if (field['autoincrement'] == true) {
+        createQuery.write('AUTOINCREMENT ');
+      }
+
+      if (i < fields.length - 1) {
+        createQuery.write(',');
       }
     }
 
-    final String result =
-        '${columnInsertQuery.toString()}) ${valueInsertQuery.toString()});';
+    createQuery.write(');');
 
-    if (dbType == DbType.sqlite) {
-      sqliteDb?.execute(result);
-    }
+    postgresqlDb?.execute(createQuery.toString());
   }
 
-  List<Map<String, dynamic>> get({required Map<String, dynamic> conditions}) {
-    final StringBuffer selectQuery = StringBuffer();
-    selectQuery.write('SELECT ');
+  Get get() {
+    return Get(tableName: tableName, dbType: dbType!);
+  }
 
-    if (conditions.containsKey('column') &&
-        conditions['column'] is List<String>) {
-      List<String> selectorArray = conditions['column'];
+  Insert insert() {
+    return Insert(tableName: tableName, dbType: dbType!);
+  }
 
-      for (int i = 0; i < selectorArray.length; i++) {
-        selectQuery.write(selectorArray[i]);
+  Update update() {
+    return Update(tableName: tableName, dbType: dbType!);
+  }
 
-        if (i < selectorArray.length - 1) {
-          selectQuery.write(", ");
-        }
-      }
-    } else {
-      selectQuery.write('*');
-    }
-
-    selectQuery.write(" FROM $tableName");
-
-    final List<Map<String, dynamic>> result = [];
-
-    if (dbType == DbType.sqlite) {
-      final ResultSet rows = sqliteDb!.select(selectQuery.toString());
-
-      for (final Row row in rows) {
-        for (String key in rows.columnNames) {
-          result.add({key: row[key]});
-        }
-      }
-    }
-
-    return result;
+  Delete delete() {
+    return Delete(tableName: tableName, dbType: dbType!);
   }
 }
 
@@ -130,7 +114,14 @@ class DartshineOrm {
   DbType type = DbType.sqlite;
   String name = '';
 
-  void fillOrm() {
+  // For PostgreSQL connection
+  String host = '';
+  String database = '';
+  String username = '';
+  String password = '';
+  int port = 0;
+
+  Future<void> fillOrm() async {
     if (type == DbType.sqlite) {
       Database sqliteDb = sqlite3.open(name);
 
@@ -138,6 +129,19 @@ class DartshineOrm {
         orm.dbType = type;
         orm.sqliteDb = sqliteDb;
         orm.createSqliteTable();
+      }
+    } else if (type == DbType.postgresql) {
+      final postgresqlDb = await Connection.open(Endpoint(
+          host: host,
+          database: database,
+          username: username,
+          password: password,
+          port: port));
+
+      for (Orm orm in orms) {
+        orm.dbType = type;
+        orm.postgresqlDb = postgresqlDb;
+        orm.createPostgresqlTable();
       }
     }
   }

@@ -35,10 +35,10 @@ class Server {
     this.debug = true,
   });
 
-  void run() {
+  Future<void> run() async {
     ServerMaker server = ServerMaker(port);
     server.addOnRequest(onRequest);
-    orms.fillOrm();
+    await orms.fillOrm();
 
     if (debug) {
       print('Server run in port $port');
