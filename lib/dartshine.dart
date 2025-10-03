@@ -28,11 +28,12 @@ class Server {
   final DartshineOrm orms;
   final bool debug;
 
-  Server(
-      {this.port = 8000,
-      required this.routes,
-      required this.orms,
-      this.debug = true});
+  Server({
+    this.port = 8000,
+    required this.routes,
+    required this.orms,
+    this.debug = true,
+  });
 
   void run() {
     ServerMaker server = ServerMaker(port);
@@ -52,8 +53,11 @@ class Server {
     HttpRequest request = handler.request;
     String uri = request.uri;
 
-    if (uri.contains(RegExp(
-        r'\.(html|htm|css|js|json|xml|txt|csv|jpg|jpeg|png|gif|svg|webp|ico|bmp|tiff|tif|mp4|webm|ogg|mov|avi|mkv|mp3|wav|m4a|aac|woff|woff2|ttf|otf|eot|pdf|zip|rar)$'))) {
+    if (uri.contains(
+      RegExp(
+        r'\.(html|htm|css|js|json|xml|txt|csv|jpg|jpeg|png|gif|svg|webp|ico|bmp|tiff|tif|mp4|webm|ogg|mov|avi|mkv|mp3|wav|m4a|aac|woff|woff2|ttf|otf|eot|pdf|zip|rar)$',
+      ),
+    )) {
       if (uri.startsWith('/')) {
         uri = uri.substring(1);
       }
@@ -108,8 +112,9 @@ class Server {
     }
 
     return HttpResponse(
-        status: response.status,
-        headers: response.headers,
-        body: response.body);
+      status: response.status,
+      headers: response.headers,
+      body: response.body,
+    );
   }
 }

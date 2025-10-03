@@ -1,27 +1,26 @@
 name: dartshine
 description: A web framework which aims to have a clear, clean syntax.
 version: 1.0.3
-repository: https://github.com/VeroniDeev/dartshine
-homepage: https://github.com/VeroniDeev/dartshine
-issue_tracker: https://github.com/VeroniDeev/dartshine/issues
-documentation: https://github.com/VeroniDeev/dartshine/wiki
+repository: https://github.com/ZbrDeev/dartshine
+homepage: https://github.com/ZbrDeev/dartshine
+issue_tracker: https://github.com/ZbrDeev/dartshine/issues
+documentation: https://github.com/ZbrDeev/dartshine/wiki
 
 environment:
   sdk: ^3.4.0
 
 # Add regular dependencies here.
 dependencies:
-  mime: ^1.0.5
-  sqlite3: ^2.4.3
-  path: ^1.9.0
+  mime: ^2.0.0
+  sqlite3: ^2.9.1
+  path: ^1.9.1
 
 dev_dependencies:
-  lints: ^3.0.0
-  test: ^1.24.0
+  lints: ^6.0.0
+  test: ^1.26.3
 
 executables:
   dartshine: dartshine
-
 
 platforms:
   windows:
