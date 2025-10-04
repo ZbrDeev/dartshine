@@ -1,0 +1,7 @@
+import 'package:dartshine/dartshine.dart';
+import 'package:{}/middleware/logger.dart';
+
+class Middleware extends DartshineMiddleware {
+  @override
+  List<ResponseFunction> get middleware => [logger, onRequest];
+}

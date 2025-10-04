@@ -27,6 +27,7 @@ Future<void> createProject(String name) async {
   await Directory(p.join(projectPath, 'lib/routes')).create();
   await Directory(p.join(projectPath, 'lib/controllers')).create();
   await Directory(p.join(projectPath, 'lib/orm')).create();
+  await Directory(p.join(projectPath, 'lib/middleware')).create();
   await Directory(p.join(projectPath, 'assets')).create();
 
   String indexFileContent = await readFile('init/assets/index.html');
@@ -39,13 +40,16 @@ Future<void> createProject(String name) async {
   String userFileContent = await readFile('init/user');
   String ormsFileContent = await readFile('init/orms');
   String binFileContent = await readFile('init/bin');
+  String middlewareFileContent = await readFile('init/middleware');
+  String middlewareLoggerFileContent = await readFile('init/logger');
 
-  controllerFileContent = controllerFileContent.replaceAll('{}', name);
+  controllerFileContent = controllerFileContent.replaceFirst('{}', name);
   binFileContent = binFileContent.replaceAll('{}', name);
   routesFileContent = routesFileContent.replaceAll('{}', name);
   ormsFileContent = ormsFileContent.replaceAll('{}', name);
   mainFileContent = mainFileContent.replaceAll('{}', name);
   pubspecFileContent = pubspecFileContent.replaceAll('{}', name);
+  middlewareFileContent = middlewareFileContent.replaceAll('{}', name);
 
   File indexFile = File(p.join(projectPath, 'assets/index.html'));
   File mainFile = File(p.join(projectPath, 'lib/$name.dart'));
@@ -57,6 +61,10 @@ Future<void> createProject(String name) async {
   File analysisFile = File(p.join(projectPath, 'analysis_options.yaml'));
   File userFile = File(p.join(projectPath, 'lib/orm/user.dart'));
   File ormsFile = File(p.join(projectPath, 'lib/orm/orms.dart'));
+  File middlewareFile =
+      File(p.join(projectPath, 'lib/middleware/middleware.dart'));
+  File middlewareLoggerFile =
+      File(p.join(projectPath, 'lib/middleware/logger.dart'));
   File styleFile = File(p.join(projectPath, 'assets/style.css'));
 
   await indexFile.create();
@@ -69,6 +77,8 @@ Future<void> createProject(String name) async {
   await analysisFile.create();
   await userFile.create();
   await ormsFile.create();
+  await middlewareFile.create();
+  await middlewareLoggerFile.create();
 
   await indexFile.writeAsString(indexFileContent);
   await styleFile.writeAsString(styleFileContent);
@@ -80,4 +90,6 @@ Future<void> createProject(String name) async {
   await analysisFile.writeAsString(analysisFileContent);
   await userFile.writeAsString(userFileContent);
   await ormsFile.writeAsString(ormsFileContent);
+  await middlewareFile.writeAsString(middlewareFileContent);
+  await middlewareLoggerFile.writeAsString(middlewareLoggerFileContent);
 }

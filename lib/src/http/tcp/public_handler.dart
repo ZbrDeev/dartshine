@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import '../serialization/response.dart';
@@ -43,5 +44,26 @@ class PublicHandler {
     _client.write(response.response);
     _client.add(data);
     _client.close();
+  }
+
+  void send(Status status, Map<String, String> headers, String dataType,
+      dynamic body) {
+    headers['Content-Length'] = '${body.length}';
+
+    HttpResponse response = HttpResponse(status: status, headers: headers);
+
+    if (body is String) {
+      response.body = body;
+      response.createResponse();
+      _client.write(response.response);
+      _client.close();
+    } else if (body is Uint8List) {
+      response.createResponse();
+      _client.write(response.response);
+      _client.add(body);
+      _client.close();
+    } else {
+      throw TypeError();
+    }
   }
 }

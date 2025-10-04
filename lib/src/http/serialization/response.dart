@@ -5,7 +5,7 @@ class HttpResponse {
   final Status status;
   final Map<String, String> headers;
   late String response;
-  final String body;
+  String body;
 
   HttpResponse(
       {this.httpVersion = 'HTTP/1.1',
@@ -20,6 +20,9 @@ class HttpResponse {
 
     response += "\r\n";
 
-    response += body;
+    if (body.isNotEmpty) {
+      response += body;
+      response += "\r\n";
+    }
   }
 }

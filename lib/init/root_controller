@@ -6,6 +6,7 @@ class RootController extends DartshineController {
     return Response(
         status: Status.ok,
         body: Template(path: 'assets/index.html')
-            .render(variableList: {'name': '{}'}));
+            .render(variableList: {'name': '{}'}),
+        headers: {});
   }
 }

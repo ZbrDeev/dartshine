@@ -1,8 +1,9 @@
 import 'package:dartshine/dartshine.dart';
 import 'package:{}/routes/routes.dart';
 import 'package:{}/orm/orms.dart';
+import 'package:{}/middleware/middleware.dart';
 
 void run() async {
-  Server server = Server(routes: Routes(), orms: Orms());
+  Server server = Server(routes: Routes(), orms: Orms(), middleware: Middleware());
   await server.run();
 }

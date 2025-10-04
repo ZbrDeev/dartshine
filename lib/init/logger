@@ -1,0 +1,7 @@
+import 'package:dartshine/dartshine.dart';
+
+Future<Response?> logger(HttpRequest request) async {
+  print("Request: ${request.method}");
+
+  return null;
+}
