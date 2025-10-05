@@ -7,7 +7,6 @@
 - [ ] Cookie
 - [ ] Public Error Handler (for example a file for error404)
 - [ ] CSRF protection
-- [ ] Compression
 - [ ] Test
 - [ ] Advanced Migration
 - [ ] Handle error

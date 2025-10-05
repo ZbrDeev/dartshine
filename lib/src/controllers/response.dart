@@ -3,7 +3,7 @@ import 'package:dartshine/src/http/serialization/status.dart';
 
 class Response {
   final Status status;
-  final dynamic body;
+  dynamic body;
   final Map<String, String> headers;
   final String dataType;
   late HttpResponse response;
