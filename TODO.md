@@ -1,15 +1,14 @@
 - [ ] Implement more database driver (PostgreSQL, MySQL)
 - [ ] Probably implement multiple orm (for example one orm for PostgreSQL and one orm for Redis)
 - [ ] Hot reload
-- [ ] Middlewares
 - [ ] Implement more cli command
-- [ ] Debugging
 - [ ] File download + file upload
 - [ ] Rest API
 - [ ] Cookie
 - [ ] Public Error Handler (for example a file for error404)
 - [ ] CSRF protection
-- [ ] CORS configuration
 - [ ] Compression
 - [ ] Test
 - [ ] Advanced Migration
+- [ ] Replace all for while, by join
+- [ ] Handle error

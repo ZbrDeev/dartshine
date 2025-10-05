@@ -9,7 +9,5 @@ String ormTypeToString(OrmTypes type) {
       return 'INTEGER';
     case OrmTypes.string:
       return 'TEXT';
-    default:
-      return 'none';
   }
 }

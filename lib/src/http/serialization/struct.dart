@@ -5,10 +5,11 @@ enum Method {
   put,
   delete,
   connect,
-  option,
+  options,
   trace,
   patch,
-  unknow
+  unknow,
+  all
 }
 
 Method methodWithString(String method) {
@@ -33,8 +34,8 @@ Method methodWithString(String method) {
     case 'CONNECT':
       result = Method.connect;
       break;
-    case 'OPTION':
-      result = Method.option;
+    case 'OPTIONS':
+      result = Method.options;
       break;
     case 'TRACE':
       result = Method.trace;
@@ -68,8 +69,8 @@ String methodToString(Method method) {
     case Method.connect:
       result = 'CONNECT';
       break;
-    case Method.option:
-      result = 'OPTION';
+    case Method.options:
+      result = 'OPTIONS';
       break;
     case Method.trace:
       result = 'TRACE';
@@ -77,7 +78,7 @@ String methodToString(Method method) {
     case Method.patch:
       result = 'PATCH';
       break;
-    case Method.unknow:
+    default:
       result = '';
       break;
   }

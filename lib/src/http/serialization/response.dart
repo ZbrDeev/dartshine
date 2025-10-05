@@ -24,5 +24,6 @@ class HttpResponse {
       response += body;
       response += "\r\n";
     }
+    response += "\r\n";
   }
 }
