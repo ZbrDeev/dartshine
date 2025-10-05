@@ -10,12 +10,13 @@ import 'dart:io';
 
 import 'package:mime/mime.dart';
 
-// TODO: HANDLE RETURN DEFAULT VALUE FOR EXAMPLE WITH ERROR404, INTERNAL ERROR, ETC
-
-typedef ResponseFunction = Future<Response?> Function(HttpRequest request);
+typedef MiddlewareNextFunction = Future<Response> Function(HttpRequest request);
+typedef ResponseFunction = Future<Response> Function(
+    HttpRequest request, MiddlewareNextFunction next);
 
 class DartshineMiddleware {
-  final List<ResponseFunction> middleware = [];
+  final List<ResponseFunction> middlewares = [];
+  int _index = 0;
 
   late DartshineRoute _routes;
 
@@ -23,20 +24,22 @@ class DartshineMiddleware {
       PublicHandler handler, HttpRequest request, DartshineRoute routes) async {
     _routes = routes;
 
-    for (var i = 0; i < middleware.length; ++i) {
-      Response? response = await middleware[i](request);
+    final Response response = await runMiddleware(request);
+    handler.send(
+        response.status, response.headers, response.dataType, response.body);
+  }
 
-      if (response != null) {
-        handler.send(response.status, response.headers, response.dataType,
-            response.body);
-        return;
-      } else {
-        continue;
-      }
+  Future<Response> runMiddleware(HttpRequest request) async {
+    if (_index < middlewares.length) {
+      var middleware = middlewares[_index];
+      _index++;
+      return middleware(request, runMiddleware);
+    } else {
+      return _onRequest(request);
     }
   }
 
-  Future<Response?> onRequest(HttpRequest request) async {
+  Future<Response> _onRequest(HttpRequest request) async {
     String uri = request.uri;
 
     if (uri.contains(

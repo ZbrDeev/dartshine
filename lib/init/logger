@@ -1,7 +1,11 @@
 import 'package:dartshine/dartshine.dart';
 
-Future<Response?> logger(HttpRequest request) async {
+Future<Response> logger(HttpRequest request, MiddlewareNextFunction next) async {
   print("Request: ${request.method}");
 
-  return null;
+  print("Before response");
+  Future<Response> response = next(request);
+  print("After response");
+
+  return response;
 }
