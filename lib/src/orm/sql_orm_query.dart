@@ -27,15 +27,7 @@ mixin DeleteQuery<T extends DeleteQuery<T>> {
   final StringBuffer _deleteQueryMaker = StringBuffer();
 
   T returning(List<String> query) {
-    _deleteQueryMaker.write(" RETURNING ");
-
-    for (var i = 0; i < query.length; ++i) {
-      if (i >= query.length - 1) {
-        _deleteQueryMaker.write(" ${query[i]}");
-      } else {
-        _deleteQueryMaker.write(" ${query[i]},");
-      }
-    }
+    _deleteQueryMaker.write(" RETURNING ${query.join(",")}");
 
     return this as T;
   }
@@ -45,13 +37,7 @@ mixin SelectQuery<T extends SelectQuery<T>> {
   final StringBuffer _selectQueryMaker = StringBuffer();
 
   T column(List<String> query) {
-    for (int i = 0; i < query.length; ++i) {
-      if (i >= query.length - 1) {
-        _selectQueryMaker.write(query[i]);
-      } else {
-        _selectQueryMaker.write("${query[i]},");
-      }
-    }
+    _selectQueryMaker.write(query.join(","));
 
     return this as T;
   }
@@ -78,15 +64,7 @@ class InsertQuery<T extends InsertQuery<T>> {
   }
 
   T returning(List<String> query) {
-    _insertQueryMaker.write(" RETURNING ");
-
-    for (var i = 0; i < query.length; ++i) {
-      if (i >= query.length - 1) {
-        _insertQueryMaker.write(" ${query[i]}");
-      } else {
-        _insertQueryMaker.write(" ${query[i]},");
-      }
-    }
+    _insertQueryMaker.write(" RETURNING ${query.join(",")}");
 
     return this as T;
   }
@@ -107,15 +85,7 @@ mixin UpdateQuery<T extends UpdateQuery<T>> {
   }
 
   T returning(List<String> query) {
-    _updateQueryMaker.write(" RETURNING ");
-
-    for (var i = 0; i < query.length; ++i) {
-      if (i >= query.length - 1) {
-        _updateQueryMaker.write(" ${query[i]}");
-      } else {
-        _updateQueryMaker.write(" ${query[i]},");
-      }
-    }
+    _updateQueryMaker.write(" RETURNING ${query.join(",")}");
 
     return this as T;
   }
@@ -216,12 +186,10 @@ class Insert extends InsertQuery<Insert> {
       this.sqliteDb});
 
   void putKeyValueData() {
-    StringBuffer keysString = StringBuffer("(");
-    StringBuffer valuesString = StringBuffer("(");
+    String keysString = "()";
+    StringBuffer valuesString = StringBuffer();
 
     for (var i = 0; i < _keys.length; ++i) {
-      keysString.write(_keys[i]);
-
       if (_types[i] == OrmTypes.string) {
         valuesString.write("'${_values[i]}'");
       } else {
@@ -229,10 +197,12 @@ class Insert extends InsertQuery<Insert> {
       }
 
       if (i < _keys.length - 1) {
-        keysString.write(",");
         valuesString.write(",");
       }
     }
+
+    _queryDataString
+        .write("(${_keys.join(",")}) VALUES (${valuesString.toString()})");
 
     _queryDataString.write(
         "(${keysString.toString()}) VALUES (${valuesString.toString()})");

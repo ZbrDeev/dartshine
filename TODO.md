@@ -10,5 +10,6 @@
 - [ ] Compression
 - [ ] Test
 - [ ] Advanced Migration
-- [ ] Replace all for while, by join
 - [ ] Handle error
+- [ ] Make the middleware in Onion style (like expressjs)
+- [ ] Add more SQL clause statement
