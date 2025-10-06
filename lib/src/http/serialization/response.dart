@@ -6,17 +6,25 @@ class HttpResponse {
   final Map<String, String> headers;
   late String response;
   String body;
+  List<String> cookies;
 
   HttpResponse(
       {this.httpVersion = 'HTTP/1.1',
       required this.status,
       required this.headers,
-      this.body = ''});
+      this.body = '',
+      this.cookies = const []});
 
   void createResponse() {
     response = "$httpVersion ${statusToString(status)}\r\n";
 
     headers.forEach((key, value) => response += "$key: $value\r\n");
+
+    if (cookies.isNotEmpty) {
+      for (String cookie in cookies) {
+        response += "$cookie\r\n";
+      }
+    }
 
     response += "\r\n";
 
@@ -24,6 +32,7 @@ class HttpResponse {
       response += body;
       response += "\r\n";
     }
+
     response += "\r\n";
   }
 }

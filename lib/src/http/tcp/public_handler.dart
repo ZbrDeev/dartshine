@@ -46,10 +46,11 @@ class PublicHandler {
   }
 
   void send(Status status, Map<String, String> headers, String dataType,
-      dynamic body) {
+      dynamic body, List<String> cookies) {
     headers['Content-Length'] = '${body.length}';
 
-    HttpResponse response = HttpResponse(status: status, headers: headers);
+    HttpResponse response =
+        HttpResponse(status: status, headers: headers, cookies: cookies);
 
     if (body is String) {
       response.body = body;

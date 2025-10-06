@@ -25,8 +25,8 @@ class DartshineMiddleware {
     _routes = routes;
 
     final Response response = await runMiddleware(request);
-    handler.send(
-        response.status, response.headers, response.dataType, response.body);
+    handler.send(response.status, response.headers, response.dataType,
+        response.body, response.responseCookies);
   }
 
   Future<Response> runMiddleware(HttpRequest request) async {

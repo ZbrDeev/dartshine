@@ -4,7 +4,6 @@
 - [ ] Implement more cli command
 - [ ] File download + file upload
 - [ ] Rest API
-- [ ] Cookie
 - [ ] Public Error Handler (for example a file for error404)
 - [ ] CSRF protection
 - [ ] Test
