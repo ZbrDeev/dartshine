@@ -52,7 +52,11 @@ class Render {
 
   String variableRender(String variableName) {
     StringBuffer data = StringBuffer();
-    String value = variableList[variableName];
+    String? value = variableList[variableName];
+
+    if (value == null) {
+      return "";
+    }
 
     data.write(value);
 
