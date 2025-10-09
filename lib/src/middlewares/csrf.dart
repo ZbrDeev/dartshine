@@ -20,7 +20,7 @@ class DartshineCsrf {
 
   DartshineCsrf({required this.secretKey});
 
-  Future<Response?> controleCsrf(
+  Future<Response?> _controleCsrf(
       HttpRequest request, String sessionId, String csrfSessionKey) async {
     if (!request.headers.containsKey("Content-Type") &&
         request.headers["Content-Type"] !=
@@ -99,7 +99,7 @@ class DartshineCsrf {
       }
 
       Response? controleResponse =
-          await controleCsrf(request, sessionId, csrfSessionKey);
+          await _controleCsrf(request, sessionId, csrfSessionKey);
 
       if (controleResponse != null) {
         return controleResponse;
