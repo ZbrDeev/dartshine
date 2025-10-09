@@ -6,13 +6,11 @@ class ServerMaker {
   final int port;
   late ServerSocket server;
   late Future<void> Function(PublicHandler handler) onRequest;
-  bool _isOnRequestInitialized = false;
 
   ServerMaker(this.port);
 
   void addOnRequest(Future<void> Function(PublicHandler handler) onRequest) {
     this.onRequest = onRequest;
-    _isOnRequestInitialized = true;
   }
 
   void run() async {
@@ -27,10 +25,8 @@ class ServerMaker {
     client.listen((data) async {
       HttpRequest request = convert(data);
 
-      if (_isOnRequestInitialized) {
-        PublicHandler handler = PublicHandler(client, request);
-        await onRequest(handler);
-      }
+      PublicHandler handler = PublicHandler(client, request);
+      await onRequest(handler);
     });
   }
 }

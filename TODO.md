@@ -4,9 +4,10 @@
 - [ ] Implement more cli command
 - [ ] File download + file upload
 - [ ] Rest API
-- [ ] Public Error Handler (for example a file for error404)
-- [ ] CSRF protection
+- [ ] Default page for each status (for example a file for error404, error500, etc...)
 - [ ] Test
 - [ ] Advanced Migration
 - [ ] Handle error
 - [ ] Add more SQL clause statement
+- [ ] Form
+- [ ] Make a special documentation for CSRF token

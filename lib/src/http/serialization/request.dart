@@ -14,7 +14,7 @@ class HttpRequest {
 
 HttpRequest convert(Uint8List request) {
   final String requestString = utf8.decode(request);
-  const Map<String, String> headers = {};
+  Map<String, String> headers = {};
 
   List<String> requestSplit = requestString.split('\r\n');
 
@@ -24,7 +24,7 @@ HttpRequest convert(Uint8List request) {
   final String httpVersion = methodRequest[2];
   requestSplit.removeAt(0);
 
-  for (int i = 0; i >= requestSplit.length; i++) {
+  for (int i = 0; i < requestSplit.length; i++) {
     String data = requestSplit[i];
 
     if (data.isEmpty) {
@@ -32,7 +32,9 @@ HttpRequest convert(Uint8List request) {
       break;
     }
 
-    List<String> dataSplit = data.split(': ');
+    List<String> dataSplit = data.split(':');
+    dataSplit[0].trim();
+    dataSplit[1].trim();
     headers[dataSplit[0]] = dataSplit[1];
   }
 

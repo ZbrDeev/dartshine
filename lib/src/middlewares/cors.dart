@@ -2,6 +2,7 @@ import 'package:dartshine/src/controllers/response.dart';
 import 'package:dartshine/src/http/serialization/request.dart';
 import 'package:dartshine/src/http/serialization/status.dart';
 import 'package:dartshine/src/http/serialization/struct.dart';
+import 'package:dartshine/src/middlewares/middleware.dart';
 
 class DartshineCors {
   String allowOrigin = "*";
@@ -11,7 +12,8 @@ class DartshineCors {
   List<String> allowHeaders = ["*"];
   List<String> exposeHeaders = ["*"];
 
-  Future<Response?> handleCors(HttpRequest request) async {
+  Future<Response> handleCors(
+      HttpRequest request, MiddlewareNextFunction next) async {
     if (request.method == Method.options) {
       Map<String, String> headers = {};
 
@@ -29,6 +31,6 @@ class DartshineCors {
       return Response(status: Status.noContent, body: '', headers: headers);
     }
 
-    return null;
+    return next(request);
   }
 }

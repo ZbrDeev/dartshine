@@ -8,6 +8,7 @@ class Cookie {
   String path;
   bool httpOnly;
   bool secure;
+  String sameSite;
 
   Cookie(
       {required this.key,
@@ -15,7 +16,8 @@ class Cookie {
       this.maxAge,
       this.path = "/",
       this.httpOnly = false,
-      this.secure = false});
+      this.secure = false,
+      this.sameSite = "none"});
 }
 
 class Response {
@@ -25,19 +27,14 @@ class Response {
   final String dataType;
   late HttpResponse response;
   List<String> responseCookies = [];
+  bool needCsrf = false;
 
   Response(
       {required this.status,
-      required this.body,
+      this.body = '',
       required this.headers,
       this.dataType = 'text/html'}) {
     headers['Content-Type'] = dataType;
-
-    if (body is String) {
-      response = HttpResponse(status: status, headers: headers, body: body);
-    } else {
-      response = HttpResponse(status: status, headers: headers);
-    }
   }
 
   Response setCookie(List<Cookie> cookies) {
@@ -61,8 +58,18 @@ class Response {
         responseCookie.write("; Secure");
       }
 
+      if (cookie.sameSite != "none") {
+        responseCookie.write("; SameSite=${cookie.sameSite}");
+      }
+
       responseCookies.add(responseCookie.toString());
     }
+
+    return this;
+  }
+
+  Response addCsrf(bool boolean) {
+    needCsrf = boolean;
 
     return this;
   }
