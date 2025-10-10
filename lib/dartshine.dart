@@ -11,6 +11,7 @@ export 'src/middlewares/middleware.dart';
 export 'src/middlewares/cors.dart';
 export 'src/middlewares/compression.dart';
 export 'src/middlewares/csrf.dart';
+export 'src/forms/forms.dart';
 
 import 'package:dartshine/src/http/serialization/request.dart';
 import 'package:dartshine/src/http/tcp/public_handler.dart';

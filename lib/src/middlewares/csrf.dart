@@ -23,8 +23,9 @@ class DartshineCsrf {
   Future<Response?> _controleCsrf(
       HttpRequest request, String sessionId, String csrfSessionKey) async {
     if (!request.headers.containsKey("Content-Type") &&
-        request.headers["Content-Type"] !=
-            "application/x-www-form-urlencoded") {
+        (request.headers["Content-Type"] !=
+                "application/x-www-form-urlencoded" ||
+            request.headers["Content-Type"] != "multipart/form-data")) {
       // TODO: HANDLE ERROR PROPERLY
       return Response(
           status: Status.forbidden, headers: {}, body: 'Invalid Content-Type');
@@ -32,7 +33,7 @@ class DartshineCsrf {
 
     Map<String, String> parsedForm = {};
 
-    if (request.body != null || request.body!.isNotEmpty) {
+    if (request.body.isNotEmpty) {
       parsedForm = parseForm(request.body);
     }
 

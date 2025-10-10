@@ -9,5 +9,7 @@
 - [ ] Advanced Migration
 - [ ] Handle error
 - [ ] Add more SQL clause statement
-- [ ] Form
 - [ ] Make a special documentation for CSRF token
+- [ ] Add more fields for Form (for exemple: FileForm, MultipleChoiceForm, BooleanForm)
+- [ ] Correct some english mistake (for exemple: in forms and error handler)
+- [ ] Update lexer and parser for better performance

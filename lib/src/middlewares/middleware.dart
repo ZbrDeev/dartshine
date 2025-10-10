@@ -105,19 +105,19 @@ class DartshineMiddleware {
 
     switch (request.method) {
       case Method.get:
-        response = controller.get();
+        response = controller.get(request);
         break;
       case Method.post:
-        response = controller.post();
+        response = controller.post(request);
         break;
       case Method.patch:
-        response = controller.patch();
+        response = controller.patch(request);
         break;
       case Method.put:
-        response = controller.put();
+        response = controller.put(request);
         break;
       case Method.delete:
-        response = controller.delete();
+        response = controller.delete(request);
         break;
       default:
     }

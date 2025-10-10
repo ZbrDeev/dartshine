@@ -6,7 +6,7 @@ class HttpRequest {
   final Method method;
   final String uri;
   final String httpVersion;
-  final String? body;
+  String body = "";
   final Map<String, String> headers;
 
   HttpRequest(this.method, this.uri, this.httpVersion, this.body, this.headers);
@@ -38,7 +38,7 @@ HttpRequest convert(Uint8List request) {
     headers[dataSplit[0]] = dataSplit[1];
   }
 
-  String? body;
+  String body = "";
 
   if (requestSplit.isNotEmpty) {
     body = requestSplit.join();

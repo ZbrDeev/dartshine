@@ -1,3 +1,4 @@
+import 'package:dartshine/src/forms/forms.dart';
 import 'package:dartshine/src/templates/lexer/token.dart';
 
 class Render {
@@ -52,13 +53,15 @@ class Render {
 
   String variableRender(String variableName) {
     StringBuffer data = StringBuffer();
-    String? value = variableList[variableName];
+    dynamic value = variableList[variableName];
 
     if (value == null) {
       return "";
+    } else if (value is DartshineForms) {
+      data.write(value.toHtml());
+    } else {
+      data.write(value);
     }
-
-    data.write(value);
 
     return data.toString();
   }
