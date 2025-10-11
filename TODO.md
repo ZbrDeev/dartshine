@@ -1,5 +1,4 @@
-- [ ] Implement more database driver (PostgreSQL, MySQL)
-- [ ] Probably implement multiple orm (for example one orm for PostgreSQL and one orm for Redis)
+- [ ] Implement more database driver (MySQL)
 - [ ] Hot reload
 - [ ] Implement more cli command
 - [ ] File download + file upload
@@ -13,3 +12,4 @@
 - [ ] Add more fields for Form (for exemple: FileForm, MultipleChoiceForm, BooleanForm)
 - [ ] Correct some english mistake (for exemple: in forms and error handler)
 - [ ] Update lexer and parser for better performance
+- [ ] Add more http functionnality

@@ -2,7 +2,7 @@ import 'package:dartshine/dartshine.dart';
 
 class RootController extends DartshineController {
   @override
-  Response get() {
+  Response get(HttpRequest request) {
     return Response(
         status: Status.ok,
         body: Template(path: 'assets/index.html')

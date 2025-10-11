@@ -1,12 +1,25 @@
 import 'package:dartshine/src/orm/db_type.dart';
 import 'package:dartshine/src/orm/sql_orm_query.dart';
 import 'package:dartshine/src/orm/types.dart';
-import 'package:postgres/postgres.dart';
+import 'package:postgresql2/postgresql.dart';
 import 'package:sqlite3/sqlite3.dart';
+
+class OrmField {
+  final String fieldName;
+  final OrmTypes type;
+  bool primaryKey;
+  bool autoincrement;
+
+  OrmField(
+      {required this.fieldName,
+      required this.type,
+      this.primaryKey = false,
+      this.autoincrement = false});
+}
 
 class Orm {
   final String tableName;
-  final List<Map<String, dynamic>> fields;
+  final List<OrmField> fields;
   DbType? dbType;
   Database? sqliteDb;
   Connection? postgresqlDb;
@@ -30,21 +43,17 @@ class Orm {
     createQuery.write('CREATE TABLE IF NOT EXISTS $tableName (');
 
     for (int i = 0; i < fields.length; i++) {
-      Map<String, dynamic> field = fields[i];
+      OrmField field = fields[i];
 
-      if (field['field_name'] is String) {
-        createQuery.write("${field['field_name']} ");
-      }
+      createQuery.write("${field.fieldName} ");
 
-      if (field['type'] is OrmTypes) {
-        createQuery.write("${ormTypeToString(field['type'])} ");
-      }
+      createQuery.write("${ormTypeToString(field.type)} ");
 
-      if (field['primary_key'] == true) {
+      if (field.primaryKey) {
         createQuery.write('PRIMARY KEY ');
       }
 
-      if (field['autoincrement'] == true) {
+      if (field.autoincrement) {
         createQuery.write('AUTOINCREMENT ');
       }
 
@@ -64,22 +73,20 @@ class Orm {
     createQuery.write('CREATE TABLE IF NOT EXISTS $tableName (');
 
     for (int i = 0; i < fields.length; i++) {
-      Map<String, dynamic> field = fields[i];
+      OrmField field = fields[i];
 
-      if (field['field_name'] is String) {
-        createQuery.write("${field['field_name']} ");
+      createQuery.write("${field.fieldName} ");
+
+      String ormTypeInString = ormTypeToString(field.type);
+
+      if (ormTypeInString == "INTEGER" && field.autoincrement) {
+        createQuery.write("SERIAL ");
+      } else {
+        createQuery.write("$ormTypeInString ");
       }
 
-      if (field['type'] is OrmTypes) {
-        createQuery.write("${ormTypeToString(field['type'])} ");
-      }
-
-      if (field['primary_key'] == true) {
+      if (field.primaryKey) {
         createQuery.write('PRIMARY KEY ');
-      }
-
-      if (field['autoincrement'] == true) {
-        createQuery.write('AUTOINCREMENT ');
       }
 
       if (i < fields.length - 1) {
@@ -89,7 +96,7 @@ class Orm {
 
     createQuery.write(');');
 
-    postgresqlDb?.execute(createQuery.toString());
+    postgresqlDb!.execute(createQuery.toString());
   }
 
   Get get() {
@@ -151,12 +158,8 @@ class DartshineOrm {
         orm.createSqliteTable();
       }
     } else if (type == DbType.postgresql) {
-      final postgresqlDb = await Connection.open(Endpoint(
-          host: host,
-          database: database,
-          username: username,
-          password: password,
-          port: port));
+      final url = "postgres://$username:$password@$host:$port/$database";
+      final postgresqlDb = await connect(url);
 
       for (Orm orm in orms) {
         orm.dbType = type;
