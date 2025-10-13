@@ -9,6 +9,7 @@ class HttpRequest {
   String body = "";
   final Map<String, String> headers;
   Map<String, String> parameters = {};
+  Map<String, String> dynamicPathValue = {};
 
   HttpRequest(this.method, this.uri, this.httpVersion, this.body, this.headers,
       this.parameters);

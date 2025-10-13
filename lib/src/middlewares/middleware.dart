@@ -65,11 +65,7 @@ class DartshineMiddleware {
 
         return response;
       } else {
-        return Response(
-            status: Status.notFound,
-            headers: {},
-            dataType: 'text/html',
-            body: '');
+        return Response(status: Status.notFound, headers: {}, dataType: '');
       }
     } else {
       Response response = findRoutes(request);
@@ -78,29 +74,33 @@ class DartshineMiddleware {
   }
 
   Response findRoutes(HttpRequest request) {
-    Map<String, dynamic> route = _routes.findUrl(request.uri);
-
-    if (route.isEmpty) {
-      return Response(
-          status: Status.notFound,
-          headers: {},
-          dataType: 'text/html',
-          body: '');
+    if (request.uri.endsWith("/") && request.uri != "/") {
+      return Response(status: Status.movedPermanently, headers: {
+        'Location': request.uri.substring(0, request.uri.length - 1)
+      });
     }
 
-    String methodString = methodToString(request.method);
-    List<String> methodList = route['method'];
+    RouteUrl? route = _routes.findUrl(request.uri);
 
-    if (!methodList.contains(methodString)) {
-      return Response(
-          status: Status.methodNotAllowed, headers: {}, dataType: '', body: '');
+    if (route == null) {
+      return Response(status: Status.notFound, headers: {}, dataType: '');
     }
 
-    DartshineController controller = route['controller'];
+    request.dynamicPathValue = route.dynamicPathValue;
+
+    List<Method> methodList = route.method;
+
+    if (!methodList.contains(request.method)) {
+      return Response(
+          status: Status.methodNotAllowed, headers: {}, dataType: '');
+    }
+
+    DartshineController controller = route.controller;
+
     Response response = Response(
         status: Status.internalServerError,
         headers: {},
-        dataType: 'text/html',
+        dataType: '',
         body: '');
 
     switch (request.method) {

@@ -12,4 +12,3 @@
 - [ ] Add more fields for Form (for example: FileForm, MultipleChoiceForm, BooleanForm)
 - [ ] Correct some english mistake (for example: in forms and error handler)
 - [ ] Update lexer and parser for better performance
-- [ ] Add more http functionnality (for example: slug url)

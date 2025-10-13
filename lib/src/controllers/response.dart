@@ -34,7 +34,9 @@ class Response {
       this.body = '',
       required this.headers,
       this.dataType = 'text/html'}) {
-    headers['Content-Type'] = dataType;
+    if (dataType.isNotEmpty) {
+      headers['Content-Type'] = dataType;
+    }
   }
 
   Response setCookie(List<Cookie> cookies) {

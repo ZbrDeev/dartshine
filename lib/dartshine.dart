@@ -1,4 +1,5 @@
 export 'src/controllers/controllers.dart';
+export 'src/http/serialization/struct.dart';
 export 'src/controllers/response.dart';
 export 'src/orm/orm.dart';
 export 'src/orm/types.dart';
@@ -39,6 +40,7 @@ class Server {
     ServerMaker server = ServerMaker(port);
     server.addOnRequest(onRequest);
     await orms.fillOrm();
+    routes.prepareRoutes();
 
     if (debug) {
       print('Server run in port $port');

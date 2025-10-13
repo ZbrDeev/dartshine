@@ -1,12 +1,114 @@
-class DartshineRoute {
-  final List<Map<String, dynamic>> urls = [];
+import 'package:dartshine/src/controllers/controllers.dart';
+import 'package:dartshine/src/http/serialization/struct.dart';
 
-  Map<String, dynamic> findUrl(String reqPath) {
-    for (Map<String, dynamic> path in urls) {
-      if (path['path'] == reqPath) {
-        return path;
+class RouteUrl {
+  String path;
+  final DartshineController controller;
+  final List<Method> method;
+  Map<String, String> dynamicPathValue = {};
+
+  RouteUrl(
+      {required this.path, required this.controller, required this.method});
+}
+
+class RouteNode {
+  RouteNode? dynamicUrl;
+  String? dynamicPath;
+  Map<String, RouteNode> nodes = {};
+  RouteUrl? route;
+}
+
+class DartshineRoute {
+  final List<RouteUrl> urls = [];
+  final RouteNode _routes = RouteNode();
+
+  void _prepareSingleRoute(RouteUrl url) {
+    if (url.path == "/") {
+      _routes.route = url;
+    }
+
+    url.path =
+        url.path.startsWith("/") ? url.path.replaceFirst("/", "") : url.path;
+
+    url.path = url.path.endsWith("/")
+        ? url.path.substring(0, url.path.length - 1)
+        : url.path;
+
+    List<String> splittedPath = url.path.split("/");
+
+    Map<String, RouteNode> root = _routes.nodes;
+    RouteNode node = _routes;
+
+    for (int i = 0; i < splittedPath.length - 1; ++i) {
+      String path = splittedPath[i];
+
+      if (root.containsKey(path)) {
+        root = root[path]!.nodes;
+        node = root[path]!;
+      } else if (node.dynamicUrl != null) {
+        root = node.dynamicUrl!.nodes;
+        node = node.dynamicUrl!;
+      } else {
+        if (splittedPath.last.startsWith("<") &&
+            RegExp(r"^<[^>]*>$").hasMatch(splittedPath.last)) {
+          node.dynamicUrl = RouteNode();
+          node.dynamicUrl!.dynamicPath = path;
+          root = node.dynamicUrl!.nodes;
+          node = node.dynamicUrl!;
+        } else {
+          root[path] = RouteNode();
+          root = root[path]!.nodes;
+          node = root[path]!;
+        }
       }
     }
-    return {};
+
+    if (splittedPath.last.startsWith("<") &&
+        RegExp(r"^<[^>]*>$").hasMatch(splittedPath.last)) {
+      node.dynamicUrl = RouteNode();
+      node.dynamicUrl!.dynamicPath = splittedPath.last;
+      node.dynamicUrl!.route = url;
+    } else {
+      node.route = url;
+    }
+  }
+
+  void prepareRoutes() {
+    for (RouteUrl url in urls) {
+      _prepareSingleRoute(url);
+    }
+  }
+
+  RouteUrl? findUrl(String urlPath) {
+    RouteNode node = _routes;
+
+    if (urlPath == "/") {
+      return node.route;
+    }
+
+    urlPath = urlPath.startsWith("/") ? urlPath.replaceFirst("/", "") : urlPath;
+    urlPath = urlPath.endsWith("/")
+        ? urlPath.substring(0, urlPath.length - 1)
+        : urlPath;
+
+    Map<String, String> dynamicPathValue = {};
+
+    for (String path in urlPath.split("/")) {
+      if (node.nodes.containsKey(path)) {
+        node = node.nodes[path]!;
+      } else if (node.dynamicUrl != null) {
+        node = node.dynamicUrl!;
+
+        String dynamicPath =
+            node.dynamicPath!.substring(1, node.dynamicPath!.length - 1);
+        dynamicPathValue[dynamicPath] = path;
+      } else {
+        return null;
+      }
+    }
+
+    node.route!.dynamicPathValue = dynamicPathValue;
+
+    return node.route;
   }
 }
