@@ -3,12 +3,11 @@
 - [ ] Implement more cli command
 - [ ] File download + file upload
 - [ ] Rest API
-- [ ] Default page for each status (for example a file for error404, error500, etc...)
 - [ ] Test
 - [ ] Advanced Migration
 - [ ] Handle error
 - [ ] Add more SQL clause statement
-- [ ] Make a special documentation for CSRF token
 - [ ] Add more fields for Form (for example: FileForm, MultipleChoiceForm, BooleanForm)
 - [ ] Correct some english mistake (for example: in forms and error handler)
 - [ ] Update lexer and parser for better performance
+- [ ] Add more http1.1 functionnality

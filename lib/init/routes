@@ -3,11 +3,7 @@ import 'package:{}/controllers/root_controller.dart';
 
 class Routes extends DartshineRoute {
   @override
-  List<Map<String, dynamic>> get urls => [
-        {
-          'path': '/',
-          'controller': RootController(),
-          'method': ['GET', 'POST', 'OPTION']
-        }
+  List<RouteUrl> get urls => [
+        RouteUrl(path: "/", controller: RootController(), method: [Method.get])
       ];
 }

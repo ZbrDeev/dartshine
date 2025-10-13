@@ -1,4 +1,3 @@
-import 'package:dartshine/src/controllers/controllers.dart';
 import 'package:dartshine/src/controllers/response.dart';
 import 'package:dartshine/src/http/serialization/request.dart';
 import 'package:dartshine/src/http/serialization/status.dart';
@@ -19,10 +18,13 @@ class DartshineMiddleware {
   int _index = 0;
 
   late DartshineRoute _routes;
+  RouteUrl? _routeUrl;
 
   void handleMiddleware(
       PublicHandler handler, HttpRequest request, DartshineRoute routes) async {
     _routes = routes;
+
+    _findRoutes(request);
 
     final Response response = await runMiddleware(request);
     handler.send(response.status, response.headers, response.dataType,
@@ -43,7 +45,11 @@ class DartshineMiddleware {
   Future<Response> _onRequest(HttpRequest request) async {
     String uri = request.uri;
 
-    if (uri.contains(
+    if (request.uri.endsWith("/") && request.uri != "/") {
+      return Response(status: Status.movedPermanently, headers: {
+        'Location': request.uri.substring(0, request.uri.length - 1)
+      });
+    } else if (uri.contains(
       RegExp(
         r'\.(html|htm|css|js|json|xml|txt|csv|jpg|jpeg|png|gif|svg|webp|ico|bmp|tiff|tif|mp4|webm|ogg|mov|avi|mkv|mp3|wav|m4a|aac|woff|woff2|ttf|otf|eot|pdf|zip|rar)$',
       ),
@@ -55,8 +61,6 @@ class DartshineMiddleware {
       File file = File(uri);
 
       if (await file.exists()) {
-        // TODO: HANDLE DATA TYPE
-
         Response response = Response(
             status: Status.ok,
             headers: {},
@@ -68,60 +72,84 @@ class DartshineMiddleware {
         return Response(status: Status.notFound, headers: {}, dataType: '');
       }
     } else {
-      Response response = findRoutes(request);
+      Response response = _makeResposne(request);
       return response;
     }
   }
 
-  Response findRoutes(HttpRequest request) {
-    if (request.uri.endsWith("/") && request.uri != "/") {
-      return Response(status: Status.movedPermanently, headers: {
-        'Location': request.uri.substring(0, request.uri.length - 1)
-      });
+  Response _makeResposne(HttpRequest request) {
+    if (_routeUrl == null) {
+      if (_routes.errorHandlers.containsKey(Status.notFound)) {
+        Response response = _routes.errorHandlers[Status.notFound]!(request);
+
+        return Response(
+            status: Status.notFound,
+            headers: response.headers,
+            dataType: response.dataType,
+            body: response.body);
+      }
+
+      return Response(status: Status.notFound, headers: {});
     }
 
-    RouteUrl? route = _routes.findUrl(request.uri);
+    if (!_routeUrl!.method.contains(request.method)) {
+      if (_routes.errorHandlers.containsKey(Status.methodNotAllowed)) {
+        Response response =
+            _routes.errorHandlers[Status.methodNotAllowed]!(request);
 
-    if (route == null) {
-      return Response(status: Status.notFound, headers: {}, dataType: '');
+        return Response(
+            status: Status.methodNotAllowed,
+            headers: response.headers,
+            dataType: response.dataType,
+            body: response.body);
+      }
+
+      return Response(status: Status.methodNotAllowed, headers: {});
     }
 
-    request.dynamicPathValue = route.dynamicPathValue;
-
-    List<Method> methodList = route.method;
-
-    if (!methodList.contains(request.method)) {
-      return Response(
-          status: Status.methodNotAllowed, headers: {}, dataType: '');
-    }
-
-    DartshineController controller = route.controller;
-
-    Response response = Response(
-        status: Status.internalServerError,
-        headers: {},
-        dataType: '',
-        body: '');
+    Response response =
+        Response(status: Status.internalServerError, headers: {});
 
     switch (request.method) {
       case Method.get:
-        response = controller.get(request);
+        response = _routeUrl!.controller.get(request);
         break;
       case Method.post:
-        response = controller.post(request);
+        response = _routeUrl!.controller.post(request);
         break;
       case Method.patch:
-        response = controller.patch(request);
+        response = _routeUrl!.controller.patch(request);
         break;
       case Method.put:
-        response = controller.put(request);
+        response = _routeUrl!.controller.put(request);
         break;
       case Method.delete:
-        response = controller.delete(request);
+        response = _routeUrl!.controller.delete(request);
         break;
       default:
+        {
+          if (_routes.errorHandlers.containsKey(Status.internalServerError)) {
+            Response response =
+                _routes.errorHandlers[Status.internalServerError]!(request);
+
+            return Response(
+                status: Status.internalServerError,
+                headers: response.headers,
+                dataType: response.dataType,
+                body: response.body);
+          }
+          return Response(status: Status.internalServerError, headers: {});
+        }
     }
 
     return response;
+  }
+
+  void _findRoutes(HttpRequest request) {
+    _routeUrl = _routes.findUrl(request.uri);
+
+    if (_routeUrl != null) {
+      request.dynamicPathValue = _routeUrl!.dynamicPathValue;
+    }
   }
 }

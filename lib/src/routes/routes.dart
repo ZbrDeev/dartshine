@@ -1,4 +1,7 @@
 import 'package:dartshine/src/controllers/controllers.dart';
+import 'package:dartshine/src/controllers/response.dart';
+import 'package:dartshine/src/http/serialization/request.dart';
+import 'package:dartshine/src/http/serialization/status.dart';
 import 'package:dartshine/src/http/serialization/struct.dart';
 
 class RouteUrl {
@@ -18,13 +21,18 @@ class RouteNode {
   RouteUrl? route;
 }
 
+typedef ErrorHandler = Response Function(HttpRequest request);
+
 class DartshineRoute {
   final List<RouteUrl> urls = [];
   final RouteNode _routes = RouteNode();
 
+  final Map<Status, ErrorHandler> errorHandlers = {};
+
   void _prepareSingleRoute(RouteUrl url) {
     if (url.path == "/") {
       _routes.route = url;
+      return;
     }
 
     url.path =
@@ -43,8 +51,8 @@ class DartshineRoute {
       String path = splittedPath[i];
 
       if (root.containsKey(path)) {
-        root = root[path]!.nodes;
         node = root[path]!;
+        root = root[path]!.nodes;
       } else if (node.dynamicUrl != null) {
         root = node.dynamicUrl!.nodes;
         node = node.dynamicUrl!;
@@ -57,8 +65,8 @@ class DartshineRoute {
           node = node.dynamicUrl!;
         } else {
           root[path] = RouteNode();
-          root = root[path]!.nodes;
           node = root[path]!;
+          root = root[path]!.nodes;
         }
       }
     }
@@ -69,6 +77,8 @@ class DartshineRoute {
       node.dynamicUrl!.dynamicPath = splittedPath.last;
       node.dynamicUrl!.route = url;
     } else {
+      node.nodes[splittedPath.last] = RouteNode();
+      node = node.nodes[splittedPath.last]!;
       node.route = url;
     }
   }
