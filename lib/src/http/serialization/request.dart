@@ -49,7 +49,14 @@ HttpRequest convert(Uint8List request) {
     List<String> dataSplit = data.split(':');
     dataSplit[0].trim();
     dataSplit[1].trim();
-    headers[dataSplit[0]] = dataSplit[1];
+
+    if (headers.containsKey(dataSplit[0])) {
+      String value = headers[dataSplit[0]]!;
+      value += ", ${dataSplit[1]}";
+      headers[dataSplit[0]] = value;
+    } else {
+      headers[dataSplit[0]] = dataSplit[1];
+    }
   }
 
   String body = "";
