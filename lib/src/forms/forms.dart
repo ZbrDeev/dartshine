@@ -5,6 +5,8 @@ import 'dart:typed_data';
 import 'package:dartshine/src/http/serialization/parse_form.dart';
 import 'package:dartshine/src/http/serialization/request.dart';
 
+// TODO: ADD MORE CUSTOM FIELD FOR EACH DOMAIN FOR EXAMPLE A FIELD EXCLUSIVELY FOR CHOICES
+
 typedef CustomValidateFunction = String? Function(String value);
 
 class Validator {
@@ -288,15 +290,77 @@ class ChoiceField extends Field {
   String toHtml(String name) {
     StringBuffer data = StringBuffer();
 
-    data.write('<select name="$name" id="id_$name"');
-    data.write(validator.toHtml());
-    data.write('>\n');
+    data.write('<select name="$name" id="id_$name">\n');
 
     for (String key in choices.keys) {
       data.write('<option value="$key">${choices[key]}</option>\n');
     }
 
     data.write('</select>');
+
+    return data.toString();
+  }
+}
+
+class MultipleChoiceField extends Field {
+  final Map<String, String> choices;
+
+  MultipleChoiceField({required this.choices, required super.validator});
+
+  @override
+  bool test(String values) {
+    List<String> valuesSplitted = values.split(",");
+
+    for (String value in valuesSplitted) {
+      if (!choices.containsKey(value)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  @override
+  String toHtml(String name) {
+    StringBuffer data = StringBuffer();
+
+    data.write('<select name="$name" id="id_$name" multiple>\n');
+
+    for (String key in choices.keys) {
+      data.write('<option value="$key">${choices[key]}</option>\n');
+    }
+
+    data.write('</select>');
+
+    return data.toString();
+  }
+}
+
+class BooleanField extends Field {
+  final bool checked;
+
+  BooleanField({this.checked = false, required super.validator});
+
+  @override
+  bool test(String value) {
+    if (value != "on") {
+      return false;
+    }
+
+    return true;
+  }
+
+  @override
+  String toHtml(String name) {
+    StringBuffer data = StringBuffer();
+
+    data.write('<input type="checkbox" name="$name" id="id_$name"');
+
+    if (checked) {
+      data.write(' checked');
+    }
+
+    data.write('>\n');
 
     return data.toString();
   }
@@ -316,9 +380,7 @@ class FileField extends Field {
   String toHtml(String name) {
     StringBuffer data = StringBuffer();
 
-    data.write('<input type="file" name="$name" id="id_$name"');
-    data.write(validator.toHtml());
-    data.write('>\n');
+    data.write('<input type="file" name="$name" id="id_$name">\n');
 
     return data.toString();
   }

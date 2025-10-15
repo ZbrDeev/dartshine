@@ -10,8 +10,15 @@ Map<String, String> parseFormUrlEncoding(String form) {
 
   for (String value in form.split("&")) {
     List<String> keyValue = value.split("=");
+    keyValue[0] = keyValue[0].trim();
 
-    parsedForm[keyValue[0]] = keyValue[1];
+    if (parsedForm.containsKey(keyValue[0])) {
+      String value = parsedForm[keyValue[0]]!;
+      value += ",${keyValue[1]}";
+      parsedForm[keyValue[0]] = value;
+    } else {
+      parsedForm[keyValue[0]] = keyValue[1];
+    }
   }
 
   return parsedForm;

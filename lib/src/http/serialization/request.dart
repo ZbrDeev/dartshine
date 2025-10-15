@@ -85,9 +85,10 @@ HttpRequest convert(Uint8List request) {
 
   Uint8List body = Uint8List(0);
 
+  // TODO: SWITCH THE START POINT AND UPDATE THE FORM PARSER start with "--<bound>" NOT "\r\n--<bound>"
   if (headers.containsKey("Content-Length")) {
     body = request.sublist(
-        index + 2, index + 2 + int.parse(headers["Content-Length"]!));
+        index + 2, index + 4 + int.parse(headers["Content-Length"]!));
   }
 
   return HttpRequest(method, uri, httpVersion, body, headers, parameters);
