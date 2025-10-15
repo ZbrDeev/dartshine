@@ -11,3 +11,4 @@
 - [ ] Correct some english mistake (for example: in forms and error handler)
 - [ ] Update lexer and parser for better performance
 - [ ] Add more http1.1 functionnality
+- [ ] Handle larger data

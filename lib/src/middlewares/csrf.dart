@@ -34,7 +34,10 @@ class DartshineCsrf {
     Map<String, String> parsedForm = {};
 
     if (request.body.isNotEmpty) {
-      parsedForm = parseForm(request.body);
+      // TODO: HANDLE THIS PARSING
+      parsedForm = request.headers["Content-Type"] == "multipart/form-data"
+          ? {}
+          : parseFormUrlEncoding(utf8.decode(request.body));
     }
 
     if (!parsedForm.containsKey(csrfTokenKeyName)) {

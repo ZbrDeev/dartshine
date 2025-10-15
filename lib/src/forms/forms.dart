@@ -1,4 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:dartshine/src/http/serialization/parse_form.dart';
+import 'package:dartshine/src/http/serialization/request.dart';
 
 typedef CustomValidateFunction = String? Function(String value);
 
@@ -297,16 +302,50 @@ class ChoiceField extends Field {
   }
 }
 
+class FileField extends Field {
+  String? uploadTo;
+
+  FileField({required super.validator, this.uploadTo});
+
+  @override
+  bool test(String value) {
+    return true;
+  }
+
+  @override
+  String toHtml(String name) {
+    StringBuffer data = StringBuffer();
+
+    data.write('<input type="file" name="$name" id="id_$name"');
+    data.write(validator.toHtml());
+    data.write('>\n');
+
+    return data.toString();
+  }
+
+  void createFile(String filename, Uint8List data) {
+    if (uploadTo == null) {
+      return;
+    }
+
+    File("$uploadTo/$filename").create().then((File file) {
+      file.writeAsBytesSync(data);
+    });
+  }
+}
+
 class DartshineForms {
   Map<String, Field> fields = {};
 
-  bool isValid(String body) {
-    Map<String, String> parsedForm = parseForm(body);
+  bool _isValidUrlEncoding(Uint8List form) {
+    Map<String, String> parsedForm = parseFormUrlEncoding(utf8.decode(form));
 
     for (String key in parsedForm.keys) {
-      if (key != "csrf_token" &&
-          !fields.containsKey(key) &&
-          !parsedForm.containsKey(key)) {
+      if (key == "csrf_token") {
+        continue;
+      }
+
+      if (!fields.containsKey(key)) {
         return false;
       }
 
@@ -318,6 +357,57 @@ class DartshineForms {
     }
 
     return true;
+  }
+
+  bool _isValidFormData(String contentType, Uint8List form) {
+    FormData formData = FormData(contentType: contentType, form: form);
+    formData.parseFormFormData();
+
+    for (String key in formData.fields.keys) {
+      if (key == "csrf_token") {
+        continue;
+      }
+
+      if (!fields.containsKey(key)) {
+        return false;
+      }
+
+      if (!fields[key]!.test(formData.fields[key]!)) {
+        return false;
+      }
+
+      fields[key]!.value = formData.fields[key]!;
+    }
+
+    for (String key in formData.files.keys) {
+      if (key != "csrf_token" &&
+          !fields.containsKey(key) &&
+          !formData.files.containsKey(key)) {
+        return false;
+      }
+
+      (fields[key]! as FileField)
+          .createFile(formData.files[key]!.filename, formData.files[key]!.data);
+    }
+
+    return true;
+  }
+
+  bool isValid(HttpRequest request) {
+    if (!request.headers.containsKey("Content-Type")) {
+      return false;
+    }
+
+    if (request.headers["Content-Type"] ==
+        "application/x-www-form-urlencoded") {
+      return _isValidUrlEncoding(request.body);
+    } else if (request.headers["Content-Type"]!
+        .contains("multipart/form-data")) {
+      return _isValidFormData(request.headers["Content-Type"]!, request.body);
+    } else {
+      // TODO: HANDLE ERROR
+      return false;
+    }
   }
 
   String toHtml() {
