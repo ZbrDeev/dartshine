@@ -1,14 +1,11 @@
 - [ ] Implement more database driver (MySQL)
-- [ ] Hot reload
 - [ ] Implement more cli command
-- [ ] File download + file upload
-- [ ] Rest API
 - [ ] Test
 - [ ] Advanced Migration
 - [ ] Handle error
 - [ ] Add more SQL clause statement
 - [ ] Correct some english mistake (for example: in forms and error handler)
-- [ ] Update lexer and parser for better performance
+- [ ] Update lexer and parser for news functionnality (ex: condition and for loop) better performance
 - [ ] Add more http1.1 functionnality
 - [ ] Handle larger data
 - [ ] Add more form custom (for example render only username field "form.fields.username")

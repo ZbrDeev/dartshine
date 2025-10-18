@@ -8,16 +8,21 @@ class HttpRequest {
   final String httpVersion;
   Uint8List body = Uint8List(0);
   String text = "";
-  // TODO: ADD JSON FIELD
+  Object? json;
   final Map<String, String> headers;
   Map<String, String> parameters = {};
   Map<String, String> dynamicPathValue = {};
 
   HttpRequest(this.method, this.uri, this.httpVersion, this.body, this.headers,
       this.parameters) {
-    if (headers.containsKey("Content-Type") &&
-        headers["Content-Type"]!.startsWith("text/")) {
+    if (!headers.containsKey("Content-Type")) {
+      return;
+    }
+
+    if (headers["Content-Type"]!.startsWith("text/")) {
       text = utf8.decode(body);
+    } else if (headers["Content-Type"] == "application/json") {
+      json = jsonDecode(utf8.decode(body));
     }
   }
 }

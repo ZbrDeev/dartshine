@@ -13,7 +13,8 @@ class Parser {
       Token token = tokens[index];
 
       if (token.token == TokenEnum.openCommandBalise) {
-        parseCommand(node: results, position: token.position!);
+        // TODO: ADD COMMAND PARSER FUNCTIONNALITY
+        // TODO: FOR NOW ADD AN ERROR TO SAY ITS NOT IMPLEMENTED YET
       } else if (token.token == TokenEnum.openVariableBalise) {
         parseVariable(node: results, position: token.position!);
       } else {

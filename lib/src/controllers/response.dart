@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dartshine/src/http/serialization/response.dart';
 import 'package:dartshine/src/http/serialization/status.dart';
 
@@ -21,10 +22,10 @@ class Cookie {
 }
 
 class Response {
-  final Status status;
-  dynamic body;
-  final Map<String, String> headers;
-  final String dataType;
+  late Status status;
+  late dynamic body;
+  late Map<String, String> headers = {};
+  String dataType = '';
   late HttpResponse response;
   List<String> responseCookies = [];
   bool needCsrf = false;
@@ -37,6 +38,45 @@ class Response {
     if (dataType.isNotEmpty) {
       headers['Content-Type'] = dataType;
     }
+  }
+
+  Response.html(
+      {required this.status,
+      required this.body,
+      Map<String, String>? headers}) {
+    if (headers != null) {
+      this.headers = headers;
+    }
+
+    dataType = 'text/html';
+  }
+
+  Response.json(
+      {required this.status,
+      required Object? data,
+      Map<String, String>? headers}) {
+    if (headers != null) {
+      this.headers = headers;
+    }
+
+    dataType = 'application/json';
+    body = jsonEncode(data);
+  }
+
+  Response.text(
+      {required this.status,
+      required this.body,
+      Map<String, String>? headers}) {
+    if (headers != null) {
+      this.headers = headers;
+    }
+
+    dataType = 'text/plain';
+  }
+
+  Response.redirect(String url, {this.headers = const {}}) {
+    status = Status.movedPermanently;
+    headers['Location'] = url;
   }
 
   Response setCookie(List<Cookie> cookies) {

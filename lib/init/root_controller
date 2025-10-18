@@ -3,10 +3,9 @@ import 'package:dartshine/dartshine.dart';
 class RootController extends DartshineController {
   @override
   Response get(HttpRequest request) {
-    return Response(
+    return Response.html(
         status: Status.ok,
         body: Template(path: 'assets/index.html')
-            .render(variableList: {'name': '{}'}),
-        headers: {});
+            .render(variableList: {'name': '{}'}));
   }
 }
