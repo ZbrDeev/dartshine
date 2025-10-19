@@ -20,7 +20,7 @@ Dartshine is a lightweight, readable, and high-performance backend framework des
 - Middlewares 
 - Forms (with multiple fields type including file field)
 - Security based middlewares (CSRF and CORS)
-- Multiple render like HTML, JSON, TEXT and custom render (in example for file)
+- Multiple render like HTML, JSON, text and custom render (in example for file)
 
 ## Installation
 
