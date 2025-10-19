@@ -18,6 +18,8 @@ class HttpResponse {
   void createResponse() {
     response = "$httpVersion ${statusToString(status)}\r\n";
 
+    response += "Powered-By: Dartshine\r\n";
+
     headers.forEach((key, value) => response += "$key: $value\r\n");
 
     if (cookies.isNotEmpty) {
@@ -25,8 +27,6 @@ class HttpResponse {
         response += "$cookie\r\n";
       }
     }
-
-    // response += "Powered-By: Dartshine\r\n";
 
     response += "\r\n";
 

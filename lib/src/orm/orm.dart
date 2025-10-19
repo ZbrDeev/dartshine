@@ -18,19 +18,19 @@ class OrmField {
 }
 
 class Orm {
-  // Table name of the orm class
+  /// Table name of the orm class
   final String tableName;
 
-  // Fields for the table
+  /// Fields for the table
   final List<OrmField> fields;
 
-  // For Database type
+  /// For Database type
   DbType? dbType;
 
-  // For SQLite connection
+  /// For SQLite connection
   Database? sqliteDb;
 
-  // For PostgreSQL connection
+  /// For PostgreSQL connection
   Connection? postgresqlDb;
 
   Orm(
@@ -108,7 +108,7 @@ class Orm {
     postgresqlDb!.execute(createQuery.toString());
   }
 
-  // Get data from the table
+  /// Get data from the table
   Get get() {
     if (dbType == DbType.sqlite) {
       return Get(tableName: tableName, dbType: dbType!, sqliteDb: sqliteDb);
@@ -118,7 +118,7 @@ class Orm {
         tableName: tableName, dbType: dbType!, postgresqlDb: postgresqlDb);
   }
 
-  // Insert data into the table
+  /// Insert data into the table
   Insert insert() {
     if (dbType == DbType.sqlite) {
       return Insert(tableName: tableName, dbType: dbType!, sqliteDb: sqliteDb);
@@ -128,7 +128,7 @@ class Orm {
         tableName: tableName, dbType: dbType!, postgresqlDb: postgresqlDb);
   }
 
-  // Update data in the table
+  /// Update data in the table
   Update update() {
     if (dbType == DbType.sqlite) {
       return Update(tableName: tableName, dbType: dbType!, sqliteDb: sqliteDb);
@@ -138,7 +138,7 @@ class Orm {
         tableName: tableName, dbType: dbType!, postgresqlDb: postgresqlDb);
   }
 
-  // Delete data from the table
+  /// Delete data from the table
   Delete delete() {
     if (dbType == DbType.sqlite) {
       return Delete(tableName: tableName, dbType: dbType!, sqliteDb: sqliteDb);
@@ -152,13 +152,13 @@ class Orm {
 class DartshineOrm {
   List<Orm> orms = [];
 
-  // Database type
+  /// Database type
   DbType type = DbType.sqlite;
 
-  // For SQLite connection
+  /// For SQLite connection
   String name = '';
 
-  // For PostgreSQL connection
+  /// For PostgreSQL connection
   String host = '';
   String database = '';
   String username = '';

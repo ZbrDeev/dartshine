@@ -7,34 +7,34 @@ import 'package:dartshine/src/routes/routes.dart';
 import 'dart:io';
 import 'package:mime/mime.dart';
 
-// The middleware next function
+/// The middleware next function
 typedef MiddlewareNextFunction = Future<Response> Function(HttpRequest request);
 
-// The function type that we need
+/// The function type that we need
 typedef ResponseFunction = Future<Response> Function(
     HttpRequest request, MiddlewareNextFunction next);
 
-// **DartshineMiddleware** is a class used for managing middleware. You should extend it with a new class.
-//
-// ## Example
-// ```dart
+/// **DartshineMiddleware** is a class used for managing middleware. You should extend it with a new class.
+///
+/// ## Example
+/// ```dart
 // // One of our middleware functions
-// Future<Response> logger(HttpRequest request, MiddlewareNextFunction next) async {
-//   print("Request: ${request.method}");
-//
-//   print("Before response");
-//   Future<Response> response = next(request);
-//   print("After response");
-//
-//   return response;
-// }
-//
-//
-// class Middleware extends DartshineMiddleware {
-//   @override
-//   List<ResponseFunction> get middlewares => [logger];
-// }
-// ```
+/// Future<Response> logger(HttpRequest request, MiddlewareNextFunction next) async {
+///   print("Request: ${request.method}");
+///
+///   print("Before response");
+///   Future<Response> response = next(request);
+///   print("After response");
+///
+///   return response;
+/// }
+///
+///
+/// class Middleware extends DartshineMiddleware {
+///   @override
+///   List<ResponseFunction> get middlewares => [logger];
+/// }
+/// ```
 class DartshineMiddleware {
   final List<ResponseFunction> middlewares = [];
   int _index = 0;

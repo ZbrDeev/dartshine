@@ -3,16 +3,16 @@ import 'package:dartshine/src/templates/parser/parser.dart';
 import 'package:dartshine/src/templates/read_file.dart';
 import 'package:dartshine/src/templates/render/render.dart';
 
-// **Template** is a class that uses the Dartshine template engine. You should provide an HTML file path.
-//
-// ## Example
-// ```dart
-// Template(path: 'assets/index.html').render(variableList: {
-//   'name': 'John Doe',
-//   'age': 24,
-//   'hobbies': ['programming', 'cooking']
-// });
-// ```
+/// **Template** is a class that uses the Dartshine template engine. You should provide an HTML file path.
+///
+/// ## Example
+/// ```dart
+/// Template(path: 'assets/index.html').render(variableList: {
+///   'name': 'John Doe',
+///   'age': 24,
+///   'hobbies': ['programming', 'cooking']
+/// });
+/// ```
 class Template {
   List<String> sources = [];
 
@@ -20,7 +20,7 @@ class Template {
     sources = readFile(path);
   }
 
-  // Used to render with variable lists
+  /// Used to render with variable lists
   String render({required Map<String, dynamic> variableList}) {
     final Lexer lexer = Lexer(sources: sources);
     lexer.lexer();

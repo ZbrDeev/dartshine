@@ -9,15 +9,15 @@ import 'package:dartshine/src/http/serialization/struct.dart';
 import 'package:dartshine/src/middlewares/middleware.dart';
 import 'package:uuid/uuid.dart';
 
-// **DartshineCsrf** is a middleware provided by Dartshine. It manages CSRF for you. You should place the middleware at the end of the middleware array that you defined, as mentioned here: [DartshineMiddleware]. You should create a secret key.
-//
-// ## Example
-// ```dart
-// class Middleware extends DartshineMiddleware {
-//   @override
-//   List<ResponseFunction> get middlewares => [logger, DartshineCsrf(secretKey: "my_super_secret_key").handleCsrf];
-// }
-// ```
+/// **DartshineCsrf** is a middleware provided by Dartshine. It manages CSRF for you. You should place the middleware at the end of the middleware array that you defined, as mentioned here: [DartshineMiddleware]. You should create a secret key.
+///
+/// ## Example
+/// ```dart
+/// class Middleware extends DartshineMiddleware {
+///   @override
+///   List<ResponseFunction> get middlewares => [logger, DartshineCsrf(secretKey: "my_super_secret_key").handleCsrf];
+/// }
+/// ```
 class DartshineCsrf {
   static String key = "sessionId";
   static String csrfTokenKeyName = "csrf_token";

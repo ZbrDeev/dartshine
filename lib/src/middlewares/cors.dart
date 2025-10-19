@@ -4,6 +4,15 @@ import 'package:dartshine/src/http/serialization/status.dart';
 import 'package:dartshine/src/http/serialization/struct.dart';
 import 'package:dartshine/src/middlewares/middleware.dart';
 
+/// **DartshineCors** is a middleware provided by Dartshine. It manages CORS for you. You should place the middleware at the end of the middleware array that you defined, as mentioned here: [DartshineMiddleware].
+///
+/// ## Example
+/// ```dart
+/// class Middleware extends DartshineMiddleware {
+///   @override
+///   List<ResponseFunction> get middlewares => [logger, DartshineCors().handleCors];
+/// }
+/// ```
 class DartshineCors {
   String allowOrigin = "localhost:8000";
   int maxAge = 0;

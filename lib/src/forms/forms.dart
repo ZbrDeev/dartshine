@@ -6,21 +6,21 @@ import 'package:dartshine/src/http/serialization/request.dart';
 
 typedef CustomValidateFunction = String? Function(String value);
 
-// **Validator** is used to validate a field.
+/// **Validator** is used to validate a field.
 class Validator {
-  // Make the field valid
+  /// Make the field valid
   bool isRequired;
 
-  // The minimum length of the field
+  /// The minimum length of the field
   int minLength;
 
-  // The maximum length of the field
+  /// The maximum length of the field
   int maxLength;
 
-  // Custom regex for the field
+  /// Custom regex for the field
   RegExp? regex;
 
-  // A list of custom test functions
+  /// A list of custom test functions
   List<CustomValidateFunction> customFunction;
 
   String error = "";
@@ -179,7 +179,7 @@ class PasswordField extends Field {
   }
 }
 
-// Field for integer data type
+/// Field for integer data type
 class IntegerField extends Field {
   static RegExp integerRegex = RegExp(r"^\d+$");
 
@@ -212,7 +212,7 @@ class IntegerField extends Field {
   }
 }
 
-// Field for floating-point data type
+/// Field for floating-point data type
 class FloatField extends Field {
   static RegExp floatRegex = RegExp(r"^[+-]?([0-9]*[.])?[0-9]+$");
 
@@ -245,7 +245,7 @@ class FloatField extends Field {
   }
 }
 
-// Field for both integer and floating-point data types
+/// Field for both integer and floating-point data types
 class NumberField extends Field {
   NumberField({required super.validator});
 
@@ -276,7 +276,7 @@ class NumberField extends Field {
   }
 }
 
-// Field for single choice
+/// Field for single choice
 class ChoiceField extends Field {
   final Map<String, String> choices;
 
@@ -313,7 +313,7 @@ class ChoiceField extends Field {
   }
 }
 
-// Field for multiple choices
+/// Field for multiple choices
 class MultipleChoicesField extends Field {
   final Map<String, String> choices;
 
@@ -348,7 +348,7 @@ class MultipleChoicesField extends Field {
   }
 }
 
-// Field for boolean value
+/// Field for boolean value
 class BooleanField extends Field {
   final bool checked;
 
@@ -379,9 +379,9 @@ class BooleanField extends Field {
   }
 }
 
-// Field for file data type
+/// Field for file data type
 class FileField extends Field {
-  // If you want to upload to a directory
+  /// If you want to upload to a directory
   String? uploadTo;
 
   FileField({required super.validator, this.uploadTo});
@@ -411,10 +411,10 @@ class FileField extends Field {
   }
 }
 
-// **DartshineForms** is used for managing forms with fields, you can create fields in fields variable.
-// This class provides a validate method with `isValid(HttpRequest request)` where request is the request you received in your controller.
+/// **DartshineForms** is used for managing forms with fields, you can create fields in fields variable.
+/// This class provides a validate method with `isValid(HttpRequest request)` where request is the request you received in your controller.
 class DartshineForms {
-  // You can create fields here
+  /// You can create fields here
   Map<String, Field> fields = {};
 
   bool _isValidUrlEncoding(Uint8List form) {
@@ -477,7 +477,7 @@ class DartshineForms {
     return true;
   }
 
-  // Used to validate the form
+  /// Used to validate the form
   bool isValid(HttpRequest request) {
     if (!request.headers.containsKey("Content-Type")) {
       return false;
