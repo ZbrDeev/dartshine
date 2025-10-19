@@ -1,3 +1,6 @@
+## 2.0.0
+- Add middleware, forms functionnality, update orm, routes functionnality
+
 ## 1.0.3
 
 - Fix some problem in pubsec and orm for the init.

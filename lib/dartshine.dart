@@ -1,11 +1,11 @@
 export 'src/controllers/controllers.dart';
-export 'src/http/serialization/struct.dart' show Method;
 export 'src/controllers/response.dart' show Response, Cookie;
 export 'src/orm/orm.dart';
 export 'src/orm/types.dart' show OrmTypes;
 export 'src/orm/db_type.dart' show DbType;
-export 'src/routes/routes.dart' show DartshineRoute, RouteUrl;
+export 'src/routes/routes.dart' show DartshineRoute, RouteUrl, ErrorHandler;
 export 'src/templates/templates.dart';
+export 'src/http/serialization/struct.dart' show Method;
 export 'src/http/serialization/status.dart' show Status;
 export 'src/http/serialization/request.dart' show HttpRequest;
 export 'src/middlewares/middleware.dart';

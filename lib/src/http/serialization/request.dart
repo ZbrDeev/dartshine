@@ -2,15 +2,33 @@ import 'dart:convert';
 import 'dart:typed_data';
 import '../serialization/struct.dart';
 
+// Used to describe the HTTP request
 class HttpRequest {
+  // Method of the request
   final Method method;
+
+  // URI request path
   final String uri;
+
+  // HTTP version of the request
   final String httpVersion;
+
+  // HTTP body of the request
   Uint8List body = Uint8List(0);
+
+  // If the request is in MIME text format, the body will be here
   String text = "";
+
+  // If the request is in MIME application/json format, the body will be here
   Object? json;
+
+  // HTTP request headers
   final Map<String, String> headers;
+
+  // HTTP request parameters
   Map<String, String> parameters = {};
+
+  // HTTP request dynamic path values
   Map<String, String> dynamicPathValue = {};
 
   HttpRequest(this.method, this.uri, this.httpVersion, this.body, this.headers,

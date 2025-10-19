@@ -1,3 +1,4 @@
+// HTTP status
 enum Status {
   continueStatus,
   switchingProtocols,

@@ -1,3 +1,4 @@
+// Used for ORM field data type
 enum OrmTypes {
   int,
   string,

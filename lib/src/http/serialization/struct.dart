@@ -1,3 +1,4 @@
+// HTTP methods
 enum Method {
   get,
   post,

@@ -26,6 +26,8 @@ class HttpResponse {
       }
     }
 
+    // response += "Powered-By: Dartshine\r\n";
+
     response += "\r\n";
 
     if (body.isNotEmpty) {

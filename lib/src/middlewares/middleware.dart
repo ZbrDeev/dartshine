@@ -7,10 +7,34 @@ import 'package:dartshine/src/routes/routes.dart';
 import 'dart:io';
 import 'package:mime/mime.dart';
 
+// The middleware next function
 typedef MiddlewareNextFunction = Future<Response> Function(HttpRequest request);
+
+// The function type that we need
 typedef ResponseFunction = Future<Response> Function(
     HttpRequest request, MiddlewareNextFunction next);
 
+// **DartshineMiddleware** is a class used for managing middleware. You should extend it with a new class.
+//
+// ## Example
+// ```dart
+// // One of our middleware functions
+// Future<Response> logger(HttpRequest request, MiddlewareNextFunction next) async {
+//   print("Request: ${request.method}");
+//
+//   print("Before response");
+//   Future<Response> response = next(request);
+//   print("After response");
+//
+//   return response;
+// }
+//
+//
+// class Middleware extends DartshineMiddleware {
+//   @override
+//   List<ResponseFunction> get middlewares => [logger];
+// }
+// ```
 class DartshineMiddleware {
   final List<ResponseFunction> middlewares = [];
   int _index = 0;
@@ -24,17 +48,17 @@ class DartshineMiddleware {
 
     _findRoutes(request);
 
-    final Response response = await runMiddleware(request);
+    final Response response = await _runMiddleware(request);
     handler.send(response.status, response.headers, response.dataType,
         response.body, response.responseCookies);
     _index = 0;
   }
 
-  Future<Response> runMiddleware(HttpRequest request) async {
+  Future<Response> _runMiddleware(HttpRequest request) async {
     if (_index < middlewares.length) {
       var middleware = middlewares[_index];
       _index++;
-      return middleware(request, runMiddleware);
+      return middleware(request, _runMiddleware);
     } else {
       return _onRequest(request);
     }
@@ -58,13 +82,11 @@ class DartshineMiddleware {
       File file = File(uri);
 
       if (await file.exists()) {
-        Response response = Response(
+        return Response(
             status: Status.ok,
             headers: {},
             dataType: lookupMimeType(file.path)!,
             body: await file.readAsBytes());
-
-        return response;
       } else {
         return Response.status(status: Status.notFound);
       }

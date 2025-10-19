@@ -4,6 +4,16 @@ import 'package:dartshine/src/http/serialization/request.dart';
 import 'package:dartshine/src/http/serialization/status.dart';
 import 'package:dartshine/src/http/serialization/struct.dart';
 
+// **RouteUrl** is used to specify the URL with the URI path, controller, and supported methods.
+//
+// ## Example
+// ```dart
+// RouteUrl(
+//   path: "/",
+//   controller: MyController(),
+//   method: [Method.get, Method.post]
+// );
+// ```
 class RouteUrl {
   String path;
   final DartshineController controller;
@@ -21,8 +31,32 @@ class RouteNode {
   RouteUrl? route;
 }
 
+// Function for error handling
 typedef ErrorHandler = Response Function(HttpRequest request);
 
+// **DartshineRoute** is a class for managing routes, you should create a class and extend to it. You can add some URLs and include error handling to each status.
+//
+// ## Example
+// ```dart
+// import 'package:dartshine/dartshine.dart';
+//
+// class Routes extends DartshineRoute {
+//   @override
+//   Map<Status, ErrorHandler> get errorHandlers => {
+//         Status.notFound: (HttpRequest request) {
+//           return Response.text(status: Status.notFound, body: "page not found");
+//         },
+//       };
+//
+//   @override
+//   List<RouteUrl> get urls => [
+//         RouteUrl(
+//             path: "/",
+//             controller: RootController(),
+//             method: [Method.get, Method.post])
+//       ];
+// }
+// ```
 class DartshineRoute {
   final List<RouteUrl> urls = [];
   final RouteNode _routes = RouteNode();

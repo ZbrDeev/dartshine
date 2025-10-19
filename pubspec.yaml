@@ -1,15 +1,15 @@
 name: dartshine
-description: A web framework which aims to have a clear, clean syntax.
-version: 1.1.0
+description: A lightweight web framework for Dart, designed for clarity, clean syntax, and performance.
+version: 2.0.0
 repository: https://github.com/ZbrDeev/dartshine
 homepage: https://github.com/ZbrDeev/dartshine
 issue_tracker: https://github.com/ZbrDeev/dartshine/issues
 documentation: https://github.com/ZbrDeev/dartshine/wiki
+topics: [backend, web, server, framework]
 
 environment:
   sdk: ^3.4.0
 
-# Add regular dependencies here.
 dependencies:
   mime: ^2.0.0
   sqlite3: ^2.9.1
@@ -25,8 +25,3 @@ dev_dependencies:
 
 executables:
   dartshine: dartshine
-
-platforms:
-  windows:
-  macos:
-  linux:
