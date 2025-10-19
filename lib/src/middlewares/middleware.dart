@@ -4,9 +4,7 @@ import 'package:dartshine/src/http/serialization/status.dart';
 import 'package:dartshine/src/http/serialization/struct.dart';
 import 'package:dartshine/src/http/tcp/public_handler.dart';
 import 'package:dartshine/src/routes/routes.dart';
-
 import 'dart:io';
-
 import 'package:mime/mime.dart';
 
 typedef MiddlewareNextFunction = Future<Response> Function(HttpRequest request);
@@ -46,9 +44,8 @@ class DartshineMiddleware {
     String uri = request.uri;
 
     if (request.uri.endsWith("/") && request.uri != "/") {
-      return Response(status: Status.movedPermanently, headers: {
-        'Location': request.uri.substring(0, request.uri.length - 1)
-      });
+      return Response.redirect(
+          request.uri.substring(0, request.uri.length - 1));
     } else if (uri.contains(
       RegExp(
         r'\.(html|htm|css|js|json|xml|txt|csv|jpg|jpeg|png|gif|svg|webp|ico|bmp|tiff|tif|mp4|webm|ogg|mov|avi|mkv|mp3|wav|m4a|aac|woff|woff2|ttf|otf|eot|pdf|zip|rar)$',
@@ -69,11 +66,10 @@ class DartshineMiddleware {
 
         return response;
       } else {
-        return Response(status: Status.notFound, headers: {}, dataType: '');
+        return Response.status(status: Status.notFound);
       }
     } else {
-      Response response = _makeResposne(request);
-      return response;
+      return _makeResposne(request);
     }
   }
 
@@ -89,7 +85,7 @@ class DartshineMiddleware {
             body: response.body);
       }
 
-      return Response(status: Status.notFound, headers: {});
+      return Response.status(status: Status.notFound);
     }
 
     if (!_routeUrl!.method.contains(request.method)) {
@@ -104,7 +100,7 @@ class DartshineMiddleware {
             body: response.body);
       }
 
-      return Response(status: Status.methodNotAllowed, headers: {});
+      return Response.status(status: Status.methodNotAllowed);
     }
 
     Response response =
@@ -138,7 +134,7 @@ class DartshineMiddleware {
                 dataType: response.dataType,
                 body: response.body);
           }
-          return Response(status: Status.internalServerError, headers: {});
+          return Response.status(status: Status.internalServerError);
         }
     }
 

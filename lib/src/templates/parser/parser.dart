@@ -1,7 +1,7 @@
+import 'package:dartshine/src/error/template_error.dart';
 import 'package:dartshine/src/templates/lexer/token.dart';
 
 class Parser {
-  bool error = false;
   final List<Map<String, dynamic>> results = [];
   int index = 0;
   final List<Token> tokens;
@@ -13,16 +13,11 @@ class Parser {
       Token token = tokens[index];
 
       if (token.token == TokenEnum.openCommandBalise) {
-        // TODO: ADD COMMAND PARSER FUNCTIONNALITY
-        // TODO: FOR NOW ADD AN ERROR TO SAY ITS NOT IMPLEMENTED YET
+        parseCommand(node: results, position: token.position!);
       } else if (token.token == TokenEnum.openVariableBalise) {
         parseVariable(node: results, position: token.position!);
       } else {
-        error = true;
-      }
-
-      if (error) {
-        return;
+        throw InvalidBaliseToken();
       }
 
       index++;
@@ -39,8 +34,7 @@ class Parser {
     } else if (token.token == TokenEnum.forCommand) {
       parseFor(node: node, position: position);
     } else {
-      error = true;
-      return;
+      throw InvalidCommandToken(tokenEnum: token.token);
     }
   }
 
@@ -54,16 +48,14 @@ class Parser {
       result['type'] = 'variable';
       result['name'] = token.value!;
     } else {
-      error = true;
-      return;
+      throw InvalidVariableName(tokenEnum: token.token);
     }
 
     index++;
     token = tokens[index];
 
     if (token.token != TokenEnum.closeVariableBalise) {
-      error = true;
-      return;
+      throw InvalidCloseBalise(isCommand: false);
     }
 
     result['startPosition'] = position;
@@ -88,8 +80,7 @@ class Parser {
           token.token == TokenEnum.stringValue) {
         tokenList.add(token);
       } else {
-        error = true;
-        return;
+        throw InvalidIfCondition(tokenEnum: token.token);
       }
     }
   }
@@ -104,17 +95,12 @@ class Parser {
 
     if (condition) {
       parseIfCondition(node: result);
-
-      if (error) {
-        return;
-      }
     } else {
       index++;
       token = tokens[index];
 
       if (token.token != TokenEnum.closeCommandBalise) {
-        error = true;
-        return;
+        throw InvalidCloseBalise(isCommand: true);
       }
     }
 
@@ -151,8 +137,7 @@ class Parser {
           children.add({'type': 'text', 'value': token.value});
           index++;
         } else {
-          error = true;
-          return;
+          throw InvalidCloseBrace();
         }
       }
 
@@ -179,8 +164,7 @@ class Parser {
     Map<String, dynamic> forCondition = {'type': 'for'};
 
     if (token.token != TokenEnum.variableName) {
-      error = true;
-      return;
+      throw InvalidVariableName(tokenEnum: token.token);
     }
 
     forCondition['variable'] = token.value!;
@@ -189,17 +173,18 @@ class Parser {
     token = tokens[index];
 
     if (token.token != TokenEnum.inCommand) {
-      error = true;
-      return;
+      throw InvalidForInCondition(tokenEnum: token.token);
     }
 
     index++;
     token = tokens[index];
 
-    if (token.token != TokenEnum.variableName ||
-        tokens[index + 1].token != TokenEnum.closeCommandBalise) {
-      error = true;
-      return;
+    if (token.token != TokenEnum.variableName) {
+      throw InvalidVariableName(tokenEnum: token.token);
+    }
+
+    if (tokens[index + 1].token != TokenEnum.closeCommandBalise) {
+      throw InvalidCloseBalise(isCommand: true);
     }
 
     index++;
@@ -228,14 +213,12 @@ class Parser {
           children.add({'type': 'text', 'value': token.value});
           index++;
         } else {
-          error = true;
-          return;
+          throw InvalidCloseBrace();
         }
       } else if (token.token == TokenEnum.openCommandBalise) {
         parseCommand(node: children, position: token.position!);
       } else {
-        error = true;
-        return;
+        throw InvalidBaliseToken();
       }
     }
 

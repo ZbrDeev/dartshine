@@ -39,6 +39,7 @@ class FormData {
   String boundary = "";
   String contentType;
   Uint8List form;
+  bool error = false;
 
   FormData({required this.contentType, required this.form});
 
@@ -79,7 +80,7 @@ class FormData {
     }
 
     if (!fieldHeader.containsKey("Content-Disposition")) {
-      // TODO: HANDLE ERROR
+      error = true;
       return;
     }
 
@@ -91,7 +92,7 @@ class FormData {
         RegExp(r'filename="([^\s;]+)"').firstMatch(contentDisposition);
 
     if (nameRegex == null) {
-      // TODO: HANDLE ERROR
+      error = true;
 
       return;
     }
@@ -100,7 +101,7 @@ class FormData {
 
     if (filenameRegex != null) {
       if (!fieldHeader.containsKey("Content-Type")) {
-        // TODO: HANDLE ERROR
+        error = true;
         return;
       }
 
@@ -130,7 +131,7 @@ class FormData {
         RegExp(r'boundary=([^\s;]+)').firstMatch(contentType);
 
     if (boundaryRegex == null) {
-      // TODO: HANDLE ERROR
+      error = true;
       return;
     }
 
@@ -159,6 +160,10 @@ class FormData {
         i += 6;
 
         _parseSingleField(i);
+
+        if (error) {
+          return;
+        }
       }
     }
   }

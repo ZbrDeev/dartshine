@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:dartshine/dartshine.dart';
+import 'package:dartshine/src/http/serialization/response.dart';
 import '../serialization/request.dart';
 import '../tcp/public_handler.dart';
 
@@ -18,7 +20,14 @@ class ServerMaker {
 
     await for (Socket client in server) {
       client.listen((data) async {
-        HttpRequest request = convert(data);
+        HttpRequest? request = convert(data);
+
+        if (request == null) {
+          client.write(
+              HttpResponse(status: Status.badRequest, headers: {}).response);
+          client.close();
+          return;
+        }
 
         PublicHandler handler = PublicHandler(client, request);
         await onRequest(handler);

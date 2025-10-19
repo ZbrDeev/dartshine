@@ -74,6 +74,12 @@ class Response {
     dataType = 'text/plain';
   }
 
+  Response.status({required this.status, Map<String, String>? headers}) {
+    if (headers != null) {
+      this.headers = headers;
+    }
+  }
+
   Response.redirect(String url, {this.headers = const {}}) {
     status = Status.movedPermanently;
     headers['Location'] = url;

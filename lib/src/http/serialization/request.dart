@@ -27,7 +27,7 @@ class HttpRequest {
   }
 }
 
-HttpRequest convert(Uint8List request) {
+HttpRequest? convert(Uint8List request) {
   int index = -1;
 
   for (int i = 0; i < request.length; ++i) {
@@ -41,7 +41,7 @@ HttpRequest convert(Uint8List request) {
   }
 
   if (index == -1) {
-    // TODO: HANDLE ERROR
+    return null;
   }
 
   final String requestString = ascii.decode(request.sublist(0, index + 2));

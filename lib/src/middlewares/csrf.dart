@@ -25,26 +25,34 @@ class DartshineCsrf {
     if (!request.headers.containsKey("Content-Type") &&
         (request.headers["Content-Type"] !=
                 "application/x-www-form-urlencoded" ||
-            request.headers["Content-Type"] != "multipart/form-data")) {
-      // TODO: HANDLE ERROR PROPERLY
-      return Response(
-          status: Status.forbidden, headers: {}, body: 'Invalid Content-Type');
+            !request.headers["Content-Type"]!
+                .contains("multipart/form-data"))) {
+      return Response.text(
+          status: Status.forbidden, body: 'Invalid Content-Type');
     }
 
     Map<String, String> parsedForm = {};
 
     if (request.body.isNotEmpty) {
-      // TODO: HANDLE THIS PARSING
-      parsedForm = request.headers["Content-Type"] == "multipart/form-data"
-          ? {}
-          : parseFormUrlEncoding(utf8.decode(request.body));
+      if (request.headers["Content-Type"]!.contains("multipart/form-data")) {
+        FormData formData = FormData(
+            contentType: request.headers["Content-Type"]!, form: request.body);
+
+        formData.parseFormFormData();
+
+        if (formData.error) {
+          return Response.status(status: Status.badRequest);
+        }
+
+        parsedForm = formData.fields;
+      } else {
+        parsedForm = parseFormUrlEncoding(utf8.decode(request.body));
+      }
     }
 
     if (!parsedForm.containsKey(csrfTokenKeyName)) {
-      return Response(
-          status: Status.forbidden,
-          headers: {},
-          body: 'You forgot the csrf key in your html form');
+      return Response.text(
+          status: Status.forbidden, body: 'Missing CSRF Token');
     }
 
     final hmac = Hmac.sha256();
@@ -60,10 +68,8 @@ class DartshineCsrf {
     final result = mac.bytes;
 
     if (base64.encode(result) != csrfSessionKey) {
-      return Response(
-          status: Status.forbidden,
-          headers: {},
-          body: 'Invalid sessionId or Csrf key');
+      return Response.text(
+          status: Status.forbidden, body: 'Invalid sessionId or Csrf key');
     }
 
     return null;
@@ -96,10 +102,8 @@ class DartshineCsrf {
         request.method == Method.patch ||
         request.method == Method.delete) {
       if (sessionId.isEmpty || csrfSessionKey.isEmpty) {
-        return Response(
-            status: Status.forbidden,
-            headers: {},
-            body: 'You forgot sessionId or Csrf key');
+        return Response.text(
+            status: Status.forbidden, body: 'Invalid sessionId or Csrf key');
       }
 
       Response? controleResponse =

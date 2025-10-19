@@ -1,11 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:dartshine/src/http/serialization/parse_form.dart';
 import 'package:dartshine/src/http/serialization/request.dart';
-
-// TODO: ADD MORE CUSTOM FIELD FOR EACH DOMAIN FOR EXAMPLE A FIELD EXCLUSIVELY FOR CHOICES
 
 typedef CustomValidateFunction = String? Function(String value);
 
@@ -425,6 +422,10 @@ class DartshineForms {
     FormData formData = FormData(contentType: contentType, form: form);
     formData.parseFormFormData();
 
+    if (formData.error) {
+      return false;
+    }
+
     for (String key in formData.fields.keys) {
       if (key == "csrf_token") {
         continue;
@@ -467,7 +468,6 @@ class DartshineForms {
         .contains("multipart/form-data")) {
       return _isValidFormData(request.headers["Content-Type"]!, request.body);
     } else {
-      // TODO: HANDLE ERROR
       return false;
     }
   }
