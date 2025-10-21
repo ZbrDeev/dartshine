@@ -1,11 +1,6 @@
 import 'package:dartshine/dartshine.dart';
 
 Orm user = Orm(tableName: 'user', fields: [
-  OrmField(
-      fieldName: 'id',
-      type: OrmTypes.int,
-      primaryKey: true,
-      autoincrement: true),
-  OrmField(fieldName: 'username', type: OrmTypes.string),
-  OrmField(fieldName: 'name', type: OrmTypes.string),
+  CharOrmField(fieldName: 'username'),
+  CharOrmField(fieldName: 'name')
 ]);

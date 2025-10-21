@@ -53,7 +53,7 @@ class InsertQuery<T extends InsertQuery<T>> {
 
   T value(String key, dynamic value) {
     _keys.add(key);
-    _values.add(value is String ? "'$value'" : value);
+    _values.add(value is String ? "'$value'" : "$value");
 
     return this as T;
   }
@@ -221,7 +221,7 @@ class Insert extends InsertQuery<Insert> {
 
     if (dbType == DbType.sqlite) {
       final rows = sqliteDb!.select(
-          "INSERT INTO $tableName ${_queryDataString.toString()} RETURNING ${_queryDataString.toString()}");
+          "INSERT INTO $tableName ${_queryDataString.toString()} ${_insertQueryMaker.toString()}");
 
       for (final row in rows[0].entries) {
         result[row.key] = row.value;
