@@ -549,8 +549,6 @@ class Orm {
 
     createQuery.write(');');
 
-    print("opa $createQuery.toString()");
-
     postgresqlDb!.execute(createQuery.toString());
   }
 

@@ -16,8 +16,6 @@ class Parser {
         parseCommand(node: results, position: token.position!);
       } else if (token.token == TokenEnum.openVariableBalise) {
         parseVariable(node: results, position: token.position!);
-      } else {
-        throw InvalidBaliseToken();
       }
 
       index++;
@@ -128,17 +126,8 @@ class Parser {
         parseVariable(node: children, position: token.position!);
       } else if (token.token == TokenEnum.openCommandBalise) {
         parseCommand(node: children, position: token.position!);
-      } else if (token.token == TokenEnum.openBrace) {
-        index++;
-        token = tokens[index];
-
-        if (token.token == TokenEnum.content &&
-            tokens[index + 1].token == TokenEnum.closeBrace) {
-          children.add({'type': 'text', 'value': token.value});
-          index++;
-        } else {
-          throw InvalidCloseBrace();
-        }
+      } else if (token.token == TokenEnum.content) {
+        children.add({'type': 'text', 'value': token.value});
       }
 
       index++;
@@ -204,17 +193,8 @@ class Parser {
         break;
       } else if (token.token == TokenEnum.openVariableBalise) {
         parseVariable(node: children, position: token.position!);
-      } else if (token.token == TokenEnum.openBrace) {
-        index++;
-        token = tokens[index];
-
-        if (token.token == TokenEnum.content &&
-            tokens[index + 1].token == TokenEnum.closeBrace) {
-          children.add({'type': 'text', 'value': token.value});
-          index++;
-        } else {
-          throw InvalidCloseBrace();
-        }
+      } else if (token.token == TokenEnum.content) {
+        children.add({'type': 'text', 'value': token.value});
       } else if (token.token == TokenEnum.openCommandBalise) {
         parseCommand(node: children, position: token.position!);
       } else {

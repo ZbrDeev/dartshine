@@ -21,7 +21,7 @@ class Template {
   }
 
   /// Used to render with variable lists
-  String render({required Map<String, dynamic> variableList}) {
+  String render({Map<String, dynamic> variableList = const {}}) {
     final Lexer lexer = Lexer(sources: sources);
     lexer.lexer();
 

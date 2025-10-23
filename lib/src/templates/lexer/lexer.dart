@@ -4,17 +4,18 @@ class Lexer {
   final List<Token> tokens = [];
   final List<String> sources;
   int position = 0;
+  bool opentext = false;
+  String guillemet = "";
 
   Lexer({required this.sources});
 
   void lexer() {
     String token = '';
     bool? isCommand;
-    bool opentext = false;
-    bool openbrace = false;
 
     for (int i = 0; i < sources.length; i++) {
       String source = sources[i];
+
       if (opentext && !(source == '"' || source == '\'')) {
         token += source;
         continue;
@@ -25,66 +26,76 @@ class Lexer {
         continue;
       }
 
-      if (openbrace && source != '}') {
-        token += source;
-        continue;
-      } else if (openbrace && source == '}') {
-        tokens.add(Token(token: TokenEnum.content, value: token));
-        tokens.add(Token(token: TokenEnum.closeBrace));
-        openbrace = false;
-        token = '';
-        continue;
-      }
-
       if (source != ' ') {
         token += source;
       }
 
       if (source == '<') {
-        token = '';
-        token += source;
         position = i;
-      } else if (token == '<\$') {
-        token = '';
-        tokens.add(
-            Token(token: TokenEnum.openVariableBalise, position: position));
-        isCommand = false;
-      } else if (token == '<#') {
-        token = '';
-        tokens
-            .add(Token(token: TokenEnum.openCommandBalise, position: position));
-        isCommand = true;
-      } else if (source == '#' || source == '\$') {
-        token = '';
-        token += source;
-      } else if (token == '#>') {
-        position = i;
-        token = '';
-        tokens.add(
-            Token(token: TokenEnum.closeCommandBalise, position: position));
-        isCommand = null;
-      } else if (token == '\$>') {
-        position = i;
-        token = '';
-        tokens.add(
-            Token(token: TokenEnum.closeVariableBalise, position: position));
-        isCommand = null;
-      } else if (token == '"' || token == '\'') {
+      } else if (source == '#') {
+        if (sources[i - 1] == '<') {
+          if (token.isNotEmpty) {
+            tokens.add(Token(
+                token: TokenEnum.content,
+                value: token.substring(0, token.length - 2)));
+          }
+
+          tokens.add(
+              Token(token: TokenEnum.openCommandBalise, position: position));
+
+          token = '';
+          isCommand = true;
+        } else if (sources[i + 1] == '>') {
+          ++i;
+          position = i;
+          token = '';
+          tokens.add(
+              Token(token: TokenEnum.closeCommandBalise, position: position));
+          isCommand = null;
+        } else {
+          token += source;
+        }
+      } else if (source == '\$') {
+        if (sources[i - 1] == '<') {
+          if (token.isNotEmpty) {
+            tokens.add(Token(
+                token: TokenEnum.content,
+                value: token.substring(0, token.length - 2)));
+          }
+
+          token = '';
+          tokens.add(
+              Token(token: TokenEnum.openVariableBalise, position: position));
+          isCommand = false;
+        } else if (sources[i + 1] == '>') {
+          ++i;
+          position = i;
+          token = '';
+          tokens.add(
+              Token(token: TokenEnum.closeVariableBalise, position: position));
+          isCommand = null;
+        } else {
+          token += source;
+        }
+      } else if ((source == '"' || source == '\'') && isCommand != null) {
+        guillemet = token;
         opentext = true;
-        token = '';
-      } else if (source == '{') {
-        openbrace = true;
-        tokens.add(Token(token: TokenEnum.openBrace));
+
         token = '';
       } else if (source == ' ') {
         if (token.trim().isNotEmpty) {
           if (isCommand == true) {
             lexeCommand(token);
+            token = '';
+            continue;
           } else if (isCommand == false) {
             tokens.add(Token(token: TokenEnum.variableName, value: token));
+            token = '';
+            continue;
           }
+
+          token += source;
         }
-        token = '';
       }
     }
   }

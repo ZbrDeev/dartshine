@@ -13,9 +13,7 @@ enum TokenEnum {
   content,
   operator,
   intValue,
-  stringValue,
-  openBrace,
-  closeBrace
+  stringValue
 }
 
 class Token {

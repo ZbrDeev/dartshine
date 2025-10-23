@@ -81,6 +81,9 @@ class Render {
         } else if (children['type'] == 'variable') {
           String result = variableRender(children['name']);
           data.write(result);
+        } else if (children['type'] == 'condition') {
+          String result = conditionRender(children);
+          data.write(result);
         }
       }
     }
@@ -99,7 +102,9 @@ class Render {
     if (result) {
       childrenList = conditionParserResult['trueCondition'];
     } else {
-      childrenList = conditionParserResult['falseCondition'];
+      if (conditionParserResult.containsKey('falseCondition')) {
+        childrenList = conditionParserResult['falseCondition'];
+      }
     }
 
     for (Map<String, dynamic> children in childrenList) {
@@ -107,6 +112,9 @@ class Render {
         data.write(children['value']);
       } else if (children['type'] == 'variable') {
         String result = variableRender(children['name']);
+        data.write(result);
+      } else if (children['type'] == 'for') {
+        String result = forRender(children);
         data.write(result);
       }
     }
@@ -129,7 +137,7 @@ class Render {
     } else if (conditionList[0].token == TokenEnum.stringValue) {
       condition.add(conditionList[0].value);
     } else if (conditionList[0].token == TokenEnum.intValue) {
-      condition.add(conditionList[0].value);
+      condition.add(int.parse(conditionList[0].value!));
     } else {
       error = true;
       return false;
@@ -142,7 +150,7 @@ class Render {
     } else if (conditionList[2].token == TokenEnum.stringValue) {
       condition.add(conditionList[2].value);
     } else if (conditionList[2].token == TokenEnum.intValue) {
-      condition.add(conditionList[2].value);
+      condition.add(int.parse(conditionList[2].value!));
     } else {
       error = true;
       return false;
