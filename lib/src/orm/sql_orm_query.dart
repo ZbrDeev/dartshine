@@ -32,6 +32,7 @@ mixin DeleteQuery<T extends DeleteQuery<T>> {
 
 mixin SelectQuery<T extends SelectQuery<T>> {
   final StringBuffer _selectQueryMaker = StringBuffer();
+  final StringBuffer _paginationQueryMaker = StringBuffer();
 
   T column(List<String> query) {
     _selectQueryMaker.write(query.join(","));
@@ -41,6 +42,16 @@ mixin SelectQuery<T extends SelectQuery<T>> {
 
   T all() {
     _selectQueryMaker.write(" * ");
+
+    return this as T;
+  }
+
+  T pagination({required int limit, int offset = 0}) {
+    _paginationQueryMaker.write("LIMIT $limit");
+
+    if (offset > 0) {
+      _paginationQueryMaker.write(" OFFSET $offset");
+    }
 
     return this as T;
   }
@@ -119,12 +130,39 @@ class Get extends Query<Get> with SelectQuery<Get> {
       this.sqliteDb,
       this.postgresqlDb});
 
+  Future<int> count({required String column, bool distinct = false}) async {
+    if (distinct && column != "*") {
+      _selectQueryMaker.write("COUNT(DISTINCT $column)");
+    } else {
+      _selectQueryMaker.write("COUNT($column)");
+    }
+
+    int result = 0;
+
+    if (dbType == DbType.sqlite) {
+      final rows = sqliteDb!.select(
+          "SELECT ${_selectQueryMaker.toString()} FROM $tableName ${_queryMaker.toString()} ${_paginationQueryMaker.toString()}");
+
+      result = rows[0].entries.first.value;
+    } else if (dbType == DbType.postgresql) {
+      result = (await postgresqlDb!
+              .query(
+                  "SELECT ${_selectQueryMaker.toString()} FROM $tableName ${_queryMaker.toString()} ${_paginationQueryMaker.toString()}")
+              .single)
+          .toMap()
+          .values
+          .first;
+    }
+
+    return result;
+  }
+
   Future<Map<String, dynamic>> fetchOne() async {
     Map<String, dynamic> result = {};
 
     if (dbType == DbType.sqlite) {
       final rows = sqliteDb!.select(
-          "SELECT ${_selectQueryMaker.toString()} FROM $tableName ${_queryMaker.toString()}");
+          "SELECT ${_selectQueryMaker.toString()} FROM $tableName ${_queryMaker.toString()} ${_paginationQueryMaker.toString()}");
 
       for (final row in rows[0].entries) {
         result[row.key] = row.value;
@@ -132,7 +170,7 @@ class Get extends Query<Get> with SelectQuery<Get> {
     } else if (dbType == DbType.postgresql) {
       result = (await postgresqlDb!
               .query(
-                  "SELECT ${_selectQueryMaker.toString()} FROM $tableName ${_queryMaker.toString()}")
+                  "SELECT ${_selectQueryMaker.toString()} FROM $tableName ${_queryMaker.toString()} ${_paginationQueryMaker.toString()}")
               .single)
           .toMap();
     }
