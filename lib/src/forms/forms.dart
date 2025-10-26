@@ -418,7 +418,8 @@ class DartshineForms {
   Map<String, Field> fields = {};
 
   bool _isValidUrlEncoding(Uint8List form) {
-    Map<String, String> parsedForm = parseFormUrlEncoding(utf8.decode(form));
+    Map<String, String> parsedForm =
+        parseFormUrlEncoding(Uri.decodeComponent(utf8.decode(form)));
 
     for (String key in parsedForm.keys) {
       if (key == "csrf_token") {
