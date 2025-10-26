@@ -1,6 +1,6 @@
 name: dartshine
 description: A lightweight web framework for Dart, designed for clarity, clean syntax, and performance.
-version: 2.2.1
+version: 2.2.2
 repository: https://github.com/ZbrDeev/dartshine
 homepage: https://github.com/ZbrDeev/dartshine
 issue_tracker: https://github.com/ZbrDeev/dartshine/issues
@@ -17,7 +17,7 @@ dependencies:
   postgresql2: ^1.7.0
   archive: ^4.0.7
   uuid: ^4.5.1
-  cryptography: ^2.7.0
+  crypto: ^3.0.6
 
 dev_dependencies:
   lints: ^6.0.0

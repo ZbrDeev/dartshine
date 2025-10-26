@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:cryptography/cryptography.dart';
+import 'package:crypto/crypto.dart';
 import 'package:dartshine/src/controllers/response.dart';
 import 'package:dartshine/src/http/serialization/parse_form.dart';
 import 'package:dartshine/src/http/serialization/request.dart';
@@ -29,8 +29,8 @@ class DartshineCsrf {
 
   DartshineCsrf({required this.secretKey});
 
-  Future<Response?> _controleCsrf(
-      HttpRequest request, String sessionId, String csrfSessionKey) async {
+  Response? _controleCsrf(
+      HttpRequest request, String sessionId, String csrfSessionKey) {
     if (!request.headers.containsKey("Content-Type") &&
         (request.headers["Content-Type"] !=
                 "application/x-www-form-urlencoded" ||
@@ -64,15 +64,14 @@ class DartshineCsrf {
           status: Status.forbidden, body: 'Missing CSRF Token');
     }
 
-    final hmac = Hmac.sha256();
+    final hmac = Hmac(sha256, secretKey.codeUnits);
 
     final List<int> bytes = [
       ...sessionId.codeUnits,
       ...parsedForm[csrfTokenKeyName]!.codeUnits
     ];
 
-    final mac = await hmac.calculateMac(bytes,
-        secretKey: SecretKey(secretKey.codeUnits));
+    final mac = hmac.convert(bytes);
 
     final result = mac.bytes;
 
@@ -117,7 +116,7 @@ class DartshineCsrf {
       }
 
       Response? controleResponse =
-          await _controleCsrf(request, sessionId, csrfSessionKey);
+          _controleCsrf(request, sessionId, csrfSessionKey);
 
       if (controleResponse != null) {
         return controleResponse;
@@ -142,15 +141,14 @@ class DartshineCsrf {
       response.body = (response.body as String).replaceAll('<% csrf_token %>',
           '<input type="hidden" name="csrf_token" value="$csrfToken">');
 
-      final hmac = Hmac.sha256();
+      final hmac = Hmac(sha256, secretKey.codeUnits);
 
       final List<int> bytes = [
         ...sessionIdUuid.codeUnits,
         ...csrfToken.codeUnits
       ];
 
-      final hmacResult = await hmac.calculateMac(bytes,
-          secretKey: SecretKey(secretKey.codeUnits));
+      final hmacResult = hmac.convert(bytes);
 
       String csrfTokenSessionIdVerif = base64.encode(hmacResult.bytes);
 
