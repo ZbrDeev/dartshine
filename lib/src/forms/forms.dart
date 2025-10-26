@@ -416,6 +416,7 @@ class FileField extends Field {
 class DartshineForms {
   /// You can create fields here
   Map<String, Field> fields = {};
+  String error = "";
 
   bool _isValidUrlEncoding(Uint8List form) {
     Map<String, String> parsedForm =
@@ -427,10 +428,12 @@ class DartshineForms {
       }
 
       if (!fields.containsKey(key)) {
+        error = "Invalid key: $key";
         return false;
       }
 
       if (!fields[key]!.test(parsedForm[key]!)) {
+        error = "Testing failed for: $key\n${fields[key]!.error}";
         return false;
       }
 
@@ -445,6 +448,7 @@ class DartshineForms {
     formData.parseFormFormData();
 
     if (formData.error) {
+      error = "Failted to parse the form";
       return false;
     }
 
@@ -454,10 +458,12 @@ class DartshineForms {
       }
 
       if (!fields.containsKey(key)) {
+        error = "Invalid key: $key";
         return false;
       }
 
       if (!fields[key]!.test(formData.fields[key]!)) {
+        error = "Testing failed for: $key\n${fields[key]!.error}";
         return false;
       }
 
@@ -465,9 +471,8 @@ class DartshineForms {
     }
 
     for (String key in formData.files.keys) {
-      if (key != "csrf_token" &&
-          !fields.containsKey(key) &&
-          !formData.files.containsKey(key)) {
+      if (key != "csrf_token" && !fields.containsKey(key)) {
+        error = "Invalid key: $key";
         return false;
       }
 
@@ -481,6 +486,7 @@ class DartshineForms {
   /// Used to validate the form
   bool isValid(HttpRequest request) {
     if (!request.headers.containsKey("Content-Type")) {
+      error = "Invalid form";
       return false;
     }
 
@@ -491,6 +497,7 @@ class DartshineForms {
         .contains("multipart/form-data")) {
       return _isValidFormData(request.headers["Content-Type"]!, request.body);
     } else {
+      error = "Invalid form";
       return false;
     }
   }
