@@ -91,11 +91,11 @@ class DartshineMiddleware {
         return Response.status(status: Status.notFound);
       }
     } else {
-      return _makeResposne(request);
+      return await _makeResponse(request);
     }
   }
 
-  Response _makeResposne(HttpRequest request) {
+  Future<Response> _makeResponse(HttpRequest request) async {
     if (_routeUrl == null) {
       if (_routes.errorHandlers.containsKey(Status.notFound)) {
         Response response = _routes.errorHandlers[Status.notFound]!(request);
@@ -130,19 +130,19 @@ class DartshineMiddleware {
 
     switch (request.method) {
       case Method.get:
-        response = _routeUrl!.controller.get(request);
+        response = await _routeUrl!.controller.get(request);
         break;
       case Method.post:
-        response = _routeUrl!.controller.post(request);
+        response = await _routeUrl!.controller.post(request);
         break;
       case Method.patch:
-        response = _routeUrl!.controller.patch(request);
+        response = await _routeUrl!.controller.patch(request);
         break;
       case Method.put:
-        response = _routeUrl!.controller.put(request);
+        response = await _routeUrl!.controller.put(request);
         break;
       case Method.delete:
-        response = _routeUrl!.controller.delete(request);
+        response = await _routeUrl!.controller.delete(request);
         break;
       default:
         {

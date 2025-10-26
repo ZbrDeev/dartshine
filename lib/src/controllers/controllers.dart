@@ -19,27 +19,27 @@ import 'package:dartshine/src/http/serialization/status.dart';
 /// ```
 class DartshineController {
   /// The GET Method in HTTP
-  Response get(HttpRequest request) {
+  Future<Response> get(HttpRequest request) async {
     return Response.status(status: Status.methodNotAllowed);
   }
 
   /// The POST Method in HTTP
-  Response post(HttpRequest request) {
+  Future<Response> post(HttpRequest request) async {
     return Response.status(status: Status.methodNotAllowed);
   }
 
   /// The PUT Method in HTTP
-  Response put(HttpRequest request) {
+  Future<Response> put(HttpRequest request) async {
     return Response.status(status: Status.methodNotAllowed);
   }
 
   /// The DELETE Method in HTTP
-  Response delete(HttpRequest request) {
+  Future<Response> delete(HttpRequest request) async {
     return Response.status(status: Status.methodNotAllowed);
   }
 
   /// The PATCH Method in HTTP
-  Response patch(HttpRequest request) {
+  Future<Response> patch(HttpRequest request) async {
     return Response.status(status: Status.methodNotAllowed);
   }
 }

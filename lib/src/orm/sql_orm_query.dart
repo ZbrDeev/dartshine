@@ -96,12 +96,12 @@ class Delete extends Query<Delete> with DeleteQuery<Delete> {
       this.sqliteDb,
       this.postgresqlDb});
 
-  void execute() {
+  void execute() async {
     if (dbType == DbType.sqlite) {
       sqliteDb!.execute(
           "DELETE FROM $tableName ${_queryMaker.toString()} ${_deleteQueryMaker.toString()}");
     } else if (dbType == DbType.postgresql) {
-      postgresqlDb!.execute(
+      await postgresqlDb!.execute(
           "DELETE FROM $tableName ${_queryMaker.toString()} ${_deleteQueryMaker.toString()}");
     }
   }
@@ -130,13 +130,11 @@ class Get extends Query<Get> with SelectQuery<Get> {
         result[row.key] = row.value;
       }
     } else if (dbType == DbType.postgresql) {
-      postgresqlDb!
-          .query(
-              "SELECT ${_selectQueryMaker.toString()} FROM $tableName ${_queryMaker.toString()}")
-          .single
-          .then((row) {
-        result = row.toMap();
-      });
+      result = (await postgresqlDb!
+              .query(
+                  "SELECT ${_selectQueryMaker.toString()} FROM $tableName ${_queryMaker.toString()}")
+              .single)
+          .toMap();
     }
 
     return result;
@@ -159,15 +157,14 @@ class Get extends Query<Get> with SelectQuery<Get> {
         results.add(result);
       }
     } else if (dbType == DbType.postgresql) {
-      postgresqlDb!
+      final rows = await postgresqlDb!
           .query(
               "SELECT ${_selectQueryMaker.toString()} FROM $tableName ${_queryMaker.toString()}")
-          .toList()
-          .then((rows) {
-        for (final row in rows) {
-          results.add(row.toMap());
-        }
-      });
+          .toList();
+
+      for (final row in rows) {
+        results.add(row.toMap());
+      }
     }
 
     return results;
@@ -214,7 +211,7 @@ class Insert extends InsertQuery<Insert> {
     }
   }
 
-  Map<String, dynamic> fetchOne() {
+  Future<Map<String, dynamic>> fetchOne() async {
     putKeyValueData();
 
     Map<String, dynamic> result = {};
@@ -227,19 +224,17 @@ class Insert extends InsertQuery<Insert> {
         result[row.key] = row.value;
       }
     } else if (dbType == DbType.postgresql) {
-      postgresqlDb!
-          .query(
-              "INSERT INTO $tableName ${_queryDataString.toString()} RETURNING ${_queryDataString.toString()}")
-          .single
-          .then((row) {
-        result = row.toMap();
-      });
+      result = (await postgresqlDb!
+              .query(
+                  "INSERT INTO $tableName ${_queryDataString.toString()} RETURNING ${_queryDataString.toString()}")
+              .single)
+          .toMap();
     }
 
     return result;
   }
 
-  List<Map<String, dynamic>> fetchAll() {
+  Future<List<Map<String, dynamic>>> fetchAll() async {
     putKeyValueData();
 
     List<Map<String, dynamic>> results = [];
@@ -258,15 +253,14 @@ class Insert extends InsertQuery<Insert> {
         results.add(result);
       }
     } else if (dbType == DbType.postgresql) {
-      postgresqlDb!
+      final rows = await postgresqlDb!
           .query(
               "INSERT INTO $tableName ${_queryDataString.toString()} RETURNING ${_queryDataString.toString()}")
-          .toList()
-          .then((rows) {
-        for (final row in rows) {
-          results.add(row.toMap());
-        }
-      });
+          .toList();
+
+      for (final row in rows) {
+        results.add(row.toMap());
+      }
     }
 
     return results;
@@ -308,7 +302,7 @@ class Update extends Query<Update> with UpdateQuery<Update> {
     }
   }
 
-  Map<String, dynamic> fetchOne() {
+  Future<Map<String, dynamic>> fetchOne() async {
     Map<String, dynamic> result = {};
 
     if (dbType == DbType.sqlite) {
@@ -319,18 +313,16 @@ class Update extends Query<Update> with UpdateQuery<Update> {
         result[row.key] = row.value;
       }
     } else if (dbType == DbType.postgresql) {
-      postgresqlDb!
-          .query(
-              "UPDATE $tableName SET ${_queryDataString.toString()} ${_updateQueryMaker.toString()} RETURNING ${_updateQueryMaker.toString()}")
-          .single
-          .then((row) {
-        result = row.toMap();
-      });
+      result = (await postgresqlDb!
+              .query(
+                  "UPDATE $tableName SET ${_queryDataString.toString()} ${_updateQueryMaker.toString()} RETURNING ${_updateQueryMaker.toString()}")
+              .single)
+          .toMap();
     }
     return result;
   }
 
-  List<Map<String, dynamic>> fetchAll() {
+  Future<List<Map<String, dynamic>>> fetchAll() async {
     List<Map<String, dynamic>> results = [];
 
     if (dbType == DbType.sqlite) {
@@ -347,15 +339,14 @@ class Update extends Query<Update> with UpdateQuery<Update> {
         results.add(result);
       }
     } else if (dbType == DbType.postgresql) {
-      postgresqlDb!
+      final rows = await postgresqlDb!
           .query(
               "UPDATE $tableName SET ${_queryDataString.toString()} ${_updateQueryMaker.toString()} RETURNING ${_updateQueryMaker.toString()}")
-          .toList()
-          .then((rows) {
-        for (final row in rows) {
-          results.add(row.toMap());
-        }
-      });
+          .toList();
+
+      for (final row in rows) {
+        results.add(row.toMap());
+      }
     }
 
     return results;
