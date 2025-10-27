@@ -44,6 +44,10 @@ class FormData {
   FormData({required this.contentType, required this.form});
 
   void _parseSingleField(int index) {
+    if (index == form.length) {
+      return;
+    }
+
     Map<String, String> fieldHeader = {};
     Uint8List body = Uint8List(0);
 

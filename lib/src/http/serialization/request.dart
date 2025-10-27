@@ -31,8 +31,16 @@ class HttpRequest {
   /// HTTP request dynamic path values
   Map<String, String> dynamicPathValue = {};
 
+  /// HTTP Client cookies
+  Map<String, String> cookies = {};
+
   HttpRequest(this.method, this.uri, this.httpVersion, this.body, this.headers,
       this.parameters) {
+    if (headers.containsKey("Cookie")) {
+      cookies = parseCookie(headers["Cookie"]!);
+      headers.remove("Cookie");
+    }
+
     if (!headers.containsKey("Content-Type")) {
       return;
     }
@@ -43,6 +51,20 @@ class HttpRequest {
       json = jsonDecode(utf8.decode(body));
     }
   }
+}
+
+Map<String, String> parseCookie(String cookies) {
+  Map<String, String> parsedCookie = {};
+  List<String> splittedCookie = cookies.split(";");
+
+  for (String cookie in splittedCookie) {
+    cookie = cookie.trim();
+    List<String> cookieKeyValue = cookie.split("=");
+
+    parsedCookie[cookieKeyValue[0]] = cookieKeyValue[1];
+  }
+
+  return parsedCookie;
 }
 
 HttpRequest? convert(Uint8List request) {
@@ -108,10 +130,9 @@ HttpRequest? convert(Uint8List request) {
 
   Uint8List body = Uint8List(0);
 
-  // TODO: SWITCH THE START POINT AND UPDATE THE FORM PARSER start with "--<bound>" NOT "\r\n--<bound>"
   if (headers.containsKey("Content-Length")) {
     body = request.sublist(
-        index + 2, index + 4 + int.parse(headers["Content-Length"]!));
+        index + 2, index + 2 + int.parse(headers["Content-Length"]!));
   }
 
   return HttpRequest(method, uri, httpVersion, body, headers, parameters);

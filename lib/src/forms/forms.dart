@@ -85,11 +85,11 @@ class Validator {
 }
 
 abstract class Field {
-  final Validator validator;
+  Validator? validator;
   String error = "";
   String value;
 
-  Field({required this.validator, this.value = ""});
+  Field({this.validator, this.value = ""});
 
   bool test(String value);
 
@@ -97,12 +97,12 @@ abstract class Field {
 }
 
 class TextField extends Field {
-  TextField({required super.validator, super.value});
+  TextField({super.validator, super.value});
 
   @override
   bool test(String value) {
-    if (!validator.validate(value)) {
-      error = validator.error;
+    if (validator != null && !validator!.validate(value)) {
+      error = validator!.error;
       return false;
     }
 
@@ -114,7 +114,9 @@ class TextField extends Field {
     StringBuffer data = StringBuffer();
 
     data.write('<input type="text" name="$name" id="id_$name"');
-    data.write(validator.toHtml());
+    if (validator != null) {
+      data.write(validator!.toHtml());
+    }
     data.write('>');
 
     return data.toString();
@@ -134,8 +136,8 @@ class MailField extends Field {
       return false;
     }
 
-    if (!validator.validate(value)) {
-      error = validator.error;
+    if (validator != null && !validator!.validate(value)) {
+      error = validator!.error;
       return false;
     }
 
@@ -147,7 +149,9 @@ class MailField extends Field {
     StringBuffer data = StringBuffer();
 
     data.write('<input type="email" name="$name" id="id_$name"');
-    data.write(validator.toHtml());
+    if (validator != null) {
+      data.write(validator!.toHtml());
+    }
     data.write('>');
 
     return data.toString();
@@ -159,8 +163,8 @@ class PasswordField extends Field {
 
   @override
   bool test(String value) {
-    if (!validator.validate(value)) {
-      error = validator.error;
+    if (validator != null && !validator!.validate(value)) {
+      error = validator!.error;
       return false;
     }
 
@@ -172,7 +176,9 @@ class PasswordField extends Field {
     StringBuffer data = StringBuffer();
 
     data.write('<input type="password" name="$name" id="id_$name"');
-    data.write(validator.toHtml());
+    if (validator != null) {
+      data.write(validator!.toHtml());
+    }
     data.write('>');
 
     return data.toString();
@@ -192,8 +198,8 @@ class IntegerField extends Field {
       return false;
     }
 
-    if (!validator.validate(value)) {
-      error = validator.error;
+    if (validator != null && !validator!.validate(value)) {
+      error = validator!.error;
       return false;
     }
 
@@ -205,7 +211,9 @@ class IntegerField extends Field {
     StringBuffer data = StringBuffer();
 
     data.write('<input type="number" name="$name" id="id_$name"');
-    data.write(validator.toHtml());
+    if (validator != null) {
+      data.write(validator!.toHtml());
+    }
     data.write('>');
 
     return data.toString();
@@ -225,8 +233,8 @@ class FloatField extends Field {
       return false;
     }
 
-    if (!validator.validate(value)) {
-      error = validator.error;
+    if (validator != null && !validator!.validate(value)) {
+      error = validator!.error;
       return false;
     }
 
@@ -238,7 +246,9 @@ class FloatField extends Field {
     StringBuffer data = StringBuffer();
 
     data.write('<input type="number" name="$name" id="id_$name"');
-    data.write(validator.toHtml());
+    if (validator != null) {
+      data.write(validator!.toHtml());
+    }
     data.write('>');
 
     return data.toString();
@@ -256,8 +266,8 @@ class NumberField extends Field {
       return false;
     }
 
-    if (!validator.validate(value)) {
-      error = validator.error;
+    if (validator != null && !validator!.validate(value)) {
+      error = validator!.error;
       return false;
     }
 
@@ -269,7 +279,9 @@ class NumberField extends Field {
     StringBuffer data = StringBuffer();
 
     data.write('<input type="number" name="$name" id="id_$name"');
-    data.write(validator.toHtml());
+    if (validator != null) {
+      data.write(validator!.toHtml());
+    }
     data.write('>');
 
     return data.toString();
@@ -284,8 +296,8 @@ class ChoiceField extends Field {
 
   @override
   bool test(String value) {
-    if (!validator.validate(value)) {
-      error = validator.error;
+    if (validator != null && !validator!.validate(value)) {
+      error = validator!.error;
       return false;
     }
 
