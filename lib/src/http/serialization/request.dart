@@ -132,7 +132,7 @@ HttpRequest? convert(Uint8List request) {
 
   if (headers.containsKey("Content-Length")) {
     body = request.sublist(
-        index + 2, index + 2 + int.parse(headers["Content-Length"]!));
+        index + 4, index + 4 + int.parse(headers["Content-Length"]!));
   }
 
   return HttpRequest(method, uri, httpVersion, body, headers, parameters);

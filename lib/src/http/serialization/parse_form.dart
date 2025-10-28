@@ -37,6 +37,7 @@ class FormData {
   Map<String, String> fields = {};
   Map<String, FormFile> files = {};
   String boundary = "";
+  Uint8List boundaryInt = Uint8List(0);
   String contentType;
   Uint8List form;
   bool error = false;
@@ -85,6 +86,7 @@ class FormData {
 
     if (!fieldHeader.containsKey("Content-Disposition")) {
       error = true;
+
       return;
     }
 
@@ -106,6 +108,7 @@ class FormData {
     if (filenameRegex != null) {
       if (!fieldHeader.containsKey("Content-Type")) {
         error = true;
+
         return;
       }
 
@@ -119,10 +122,8 @@ class FormData {
   }
 
   bool _checkBoundary(int index) {
-    Uint8List boundaryInt = utf8.encode(boundary);
-
     for (int i = 0; i < boundary.length; ++i) {
-      if (form[index + 4 + i] != boundaryInt[i]) {
+      if (form[index + 2 + i] != boundaryInt[i]) {
         return false;
       }
     }
@@ -136,10 +137,12 @@ class FormData {
 
     if (boundaryRegex == null) {
       error = true;
+
       return;
     }
 
     boundary = boundaryRegex.group(1)!;
+    boundaryInt = utf8.encode(boundary);
 
     for (int i = 0; i < form.length; ++i) {
       if (form[i] == 45 &&
@@ -147,23 +150,17 @@ class FormData {
           form[i + 2] == 13 &&
           form[i + 3] == 10) {
         break;
-      } else if (form[i] == 13 &&
-          form[i + 1] == 10 &&
-          form[i + 2] == 45 &&
-          form[i + 3] == 45 &&
-          _checkBoundary(i)) {
-        i += boundary.length;
+      } else if (form[i] == 45 && form[i + 1] == 45 && _checkBoundary(i)) {
+        i += boundaryInt.length + 2;
 
-        if (form[i] == 45 &&
-            form[i + 1] == 45 &&
-            form[i + 2] == 13 &&
-            form[i + 3] == 10) {
+        if (form[i] == 13 && form[i + 1] == 10) {
+          i += 2;
+          _parseSingleField(i);
+        } else if (form[i] == 45 && form[i + 1] == 45) {
           break;
+        } else {
+          error = true;
         }
-
-        i += 6;
-
-        _parseSingleField(i);
 
         if (error) {
           return;

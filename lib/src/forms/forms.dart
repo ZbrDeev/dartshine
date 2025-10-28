@@ -127,7 +127,7 @@ class MailField extends Field {
   static RegExp mailRegex =
       RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
 
-  MailField({required super.validator, super.value});
+  MailField({super.validator, super.value});
 
   @override
   bool test(String value) {
@@ -159,7 +159,7 @@ class MailField extends Field {
 }
 
 class PasswordField extends Field {
-  PasswordField({required super.validator, super.value});
+  PasswordField({super.validator, super.value});
 
   @override
   bool test(String value) {
@@ -189,7 +189,7 @@ class PasswordField extends Field {
 class IntegerField extends Field {
   static RegExp integerRegex = RegExp(r"^\d+$");
 
-  IntegerField({required super.validator, super.value});
+  IntegerField({super.validator, super.value});
 
   @override
   bool test(String value) {
@@ -224,7 +224,7 @@ class IntegerField extends Field {
 class FloatField extends Field {
   static RegExp floatRegex = RegExp(r"^[+-]?([0-9]*[.])?[0-9]+$");
 
-  FloatField({required super.validator, super.value});
+  FloatField({super.validator, super.value});
 
   @override
   bool test(String value) {
@@ -257,7 +257,7 @@ class FloatField extends Field {
 
 /// Field for both integer and floating-point data types
 class NumberField extends Field {
-  NumberField({required super.validator, super.value});
+  NumberField({super.validator, super.value});
 
   @override
   bool test(String value) {
@@ -292,7 +292,7 @@ class NumberField extends Field {
 class ChoiceField extends Field {
   final Map<String, String> choices;
 
-  ChoiceField({required this.choices, required super.validator, super.value});
+  ChoiceField({required this.choices, super.validator, super.value});
 
   @override
   bool test(String value) {
@@ -329,8 +329,7 @@ class ChoiceField extends Field {
 class MultipleChoicesField extends Field {
   final Map<String, String> choices;
 
-  MultipleChoicesField(
-      {required this.choices, required super.validator, super.value});
+  MultipleChoicesField({required this.choices, super.validator, super.value});
 
   @override
   bool test(String values) {
@@ -365,7 +364,7 @@ class MultipleChoicesField extends Field {
 class BooleanField extends Field {
   final bool checked;
 
-  BooleanField({this.checked = false, required super.validator, super.value});
+  BooleanField({this.checked = false, super.validator, super.value});
 
   @override
   bool test(String value) {
@@ -397,7 +396,7 @@ class FileField extends Field {
   /// If you want to upload to a directory
   String? uploadTo;
 
-  FileField({required super.validator, super.value, this.uploadTo});
+  FileField({super.validator, super.value, this.uploadTo});
 
   @override
   bool test(String value) {
@@ -481,7 +480,7 @@ class DartshineForms {
         return false;
       }
 
-      fields[key]!.value = formData.fields[key]!;
+      values[key] = formData.fields[key]!;
     }
 
     for (String key in formData.files.keys) {
