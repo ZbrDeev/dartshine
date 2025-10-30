@@ -42,14 +42,14 @@ class DartshineMiddleware {
   late DartshineRoute _routes;
   RouteUrl? _routeUrl;
 
-  void handleMiddleware(
+  Future<void> handleMiddleware(
       PublicHandler handler, HttpRequest request, DartshineRoute routes) async {
     _routes = routes;
 
     _findRoutes(request);
 
     final Response response = await _runMiddleware(request);
-    handler.send(response.status, response.headers, response.dataType,
+    await handler.send(response.status, response.headers, response.dataType,
         response.body, response.responseCookies);
     _index = 0;
   }

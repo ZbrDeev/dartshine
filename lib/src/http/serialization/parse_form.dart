@@ -78,7 +78,10 @@ class FormData {
           form[i + 2] == 13 &&
           form[i + 3] == 10) {
         break;
-      } else if (form[i] == 13 && form[i + 1] == 10) {
+      } else if (form[i] == 13 &&
+          form[i + 1] == 10 &&
+          form[i + 2] == 45 &&
+          form[i + 3] == 45) {
         body = form.sublist(startPoint, i);
         break;
       }
@@ -156,7 +159,10 @@ class FormData {
         if (form[i] == 13 && form[i + 1] == 10) {
           i += 2;
           _parseSingleField(i);
-        } else if (form[i] == 45 && form[i + 1] == 45) {
+        } else if (form[i] == 45 &&
+            form[i + 1] == 45 &&
+            form[i + 2] == 13 &&
+            form[i + 3] == 10) {
           break;
         } else {
           error = true;

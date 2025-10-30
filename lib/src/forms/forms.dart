@@ -489,6 +489,8 @@ class DartshineForms {
         return false;
       }
 
+      values[key] = formData.files[key]!.filename;
+
       (fields[key]! as FileField)
           .createFile(formData.files[key]!.filename, formData.files[key]!.data);
     }

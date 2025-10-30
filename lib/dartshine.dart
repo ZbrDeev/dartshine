@@ -54,6 +54,6 @@ class Server {
   Future<void> onRequest(PublicHandler handler) async {
     HttpRequest request = handler.request;
 
-    middleware.handleMiddleware(handler, request, routes);
+    await middleware.handleMiddleware(handler, request, routes);
   }
 }

@@ -10,8 +10,8 @@ class PublicHandler {
 
   const PublicHandler(this._client, this.request);
 
-  void send(Status status, Map<String, String> headers, String dataType,
-      dynamic body, List<String> cookies) {
+  Future<void> send(Status status, Map<String, String> headers, String dataType,
+      dynamic body, List<String> cookies) async {
     if (body.length > 0) {
       headers['Content-Length'] = '${body.length}';
     }
@@ -23,12 +23,12 @@ class PublicHandler {
       response.body = body;
       response.createResponse();
       _client.write(response.response);
-      _client.close();
+      await _client.close();
     } else if (body is Uint8List) {
       response.createResponse();
       _client.write(response.response);
       _client.add(body);
-      _client.close();
+      await _client.close();
     } else {
       throw TypeError();
     }
