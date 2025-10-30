@@ -164,6 +164,10 @@ class Get extends Query<Get> with SelectQuery<Get> {
       final rows = sqliteDb!.select(
           "SELECT ${_selectQueryMaker.toString()} FROM $tableName ${_queryMaker.toString()} ${_paginationQueryMaker.toString()}");
 
+      if (rows.isEmpty) {
+        return result;
+      }
+
       for (final row in rows[0].entries) {
         result[row.key] = row.value;
       }

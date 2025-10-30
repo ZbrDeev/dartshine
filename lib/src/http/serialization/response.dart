@@ -32,9 +32,6 @@ class HttpResponse {
 
     if (body.isNotEmpty) {
       response += body;
-      response += "\r\n";
     }
-
-    response += "\r\n";
   }
 }
