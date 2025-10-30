@@ -3,6 +3,7 @@ export 'src/controllers/response.dart' show Response, Cookie;
 export 'src/orm/orm.dart';
 export 'src/orm/types.dart' show OrmTypes;
 export 'src/orm/db_type.dart' show DbType;
+export 'src/orm/sql_orm_query.dart' show Get, Delete, Insert, Update;
 export 'src/routes/routes.dart' show DartshineRoute, RouteUrl, ErrorHandler;
 export 'src/templates/templates.dart';
 export 'src/http/serialization/struct.dart' show Method;

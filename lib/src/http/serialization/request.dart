@@ -163,6 +163,7 @@ class ParseHttpRequest {
 
     if (request.isEmpty) {
       done = true;
+      result!.parseCookieAndContentType();
     }
 
     if (done) {
