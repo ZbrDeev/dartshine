@@ -1,108 +1,187 @@
 import 'package:dartshine/src/error/template_error.dart';
 import 'package:dartshine/src/templates/lexer/token.dart';
+import 'package:dartshine/src/templates/parser/ast.dart';
 
 class Parser {
-  final List<Map<String, dynamic>> results = [];
+  final AstRoot root = AstRoot();
   int index = 0;
   final List<Token> tokens;
+  final String filename;
 
-  Parser({required this.tokens});
+  Parser({required this.tokens, required this.filename});
 
   void parser() {
-    while (index < tokens.length) {
+    for (; index < tokens.length; ++index) {
       Token token = tokens[index];
 
       if (token.token == TokenEnum.openCommandBalise) {
-        parseCommand(node: results, position: token.position!);
+        root.nodes.add(parseCommand(position: token.position!));
       } else if (token.token == TokenEnum.openVariableBalise) {
-        parseVariable(node: results, position: token.position!);
-      }
+        root.nodes.add(parseVariable(position: token.position!));
 
-      index++;
+        if (tokens[index].token != TokenEnum.closeVariableBalise) {
+          throw InvalidCloseBalise(
+              isCommand: false,
+              filename: filename,
+              line: tokens[index].line,
+              column: tokens[index].column);
+        }
+      }
     }
   }
 
-  void parseCommand(
-      {required List<Map<String, dynamic>> node, required int position}) {
-    index++;
-    Token token = tokens[index];
+  AstNode parseCommand({required int position}) {
+    Token token = tokens[++index];
 
     if (token.token == TokenEnum.ifCommand) {
-      parseCondition(node: node, condition: true, position: position);
+      return parseCondition(position: position);
     } else if (token.token == TokenEnum.forCommand) {
-      parseFor(node: node, position: position);
+      return parseFor(position: position);
     } else {
-      throw InvalidCommandToken(tokenEnum: token.token);
+      throw InvalidCommandToken(
+          tokenEnum: token.token,
+          filename: filename,
+          line: token.line,
+          column: token.column);
     }
   }
 
-  void parseVariable(
-      {required List<Map<String, dynamic>> node, required int position}) {
-    index++;
-    Token token = tokens[index];
-    Map<String, dynamic> result = {};
+  int _parseBracket() {
+    String number = "";
 
-    if (token.token == TokenEnum.variableName) {
-      result['type'] = 'variable';
-      result['name'] = token.value!;
-    } else {
-      throw InvalidVariableName(tokenEnum: token.token);
+    if (tokens[++index].token != TokenEnum.intValue) {
+      throw InvalidIntegerValue(
+          tokenEnum: tokens[index].token,
+          filename: filename,
+          column: tokens[index].column,
+          line: tokens[index].line);
     }
 
-    index++;
-    token = tokens[index];
+    number = tokens[index].value!;
 
-    if (token.token != TokenEnum.closeVariableBalise) {
-      throw InvalidCloseBalise(isCommand: false);
+    if (tokens[++index].token != TokenEnum.closeBracket) {
+      throw InvalidCloseBracket(
+          tokenEnum: tokens[index].token,
+          filename: filename,
+          column: tokens[index].column,
+          line: tokens[index].line);
     }
 
-    result['startPosition'] = position;
-    result['endPosition'] = token.position!;
-
-    node.add(result);
+    return int.parse(number);
   }
 
-  void parseIfCondition({required Map<String, dynamic> node}) {
-    List<Token> tokenList = [];
+  AstNode parseVariable({required int position}) {
+    Token token = tokens[++index];
+    AstNode result;
+    List<dynamic> variableList = [];
 
-    while (true) {
-      index++;
-      Token token = tokens[index];
-
-      if (token.token == TokenEnum.closeCommandBalise) {
-        node['condition'] = tokenList;
-        break;
-      } else if (token.token == TokenEnum.variableName ||
-          token.token == TokenEnum.operator ||
-          token.token == TokenEnum.intValue ||
-          token.token == TokenEnum.stringValue) {
-        tokenList.add(token);
-      } else {
-        throw InvalidIfCondition(tokenEnum: token.token);
-      }
-    }
-  }
-
-  void parseCondition(
-      {required List<Map<String, dynamic>> node,
-      required bool condition,
-      Map<String, dynamic>? elseNode,
-      required int position}) {
-    Token token = tokens[index];
-    Map<String, dynamic> result = {'type': 'condition'};
-
-    if (condition) {
-      parseIfCondition(node: result);
-    } else {
-      index++;
+    for (; index < tokens.length; ++index) {
       token = tokens[index];
 
-      if (token.token != TokenEnum.closeCommandBalise) {
-        throw InvalidCloseBalise(isCommand: true);
+      if (token.token == TokenEnum.variableName) {
+        variableList.add(token.value);
+      } else if (token.token == TokenEnum.dot) {
+        continue;
+      } else if (token.token == TokenEnum.openBracket) {
+        variableList.add(_parseBracket());
+      } else {
+        break;
       }
     }
 
-    List<Map<String, dynamic>> children = [];
+    if (variableList.length > 1) {
+      MemberAst ast = MemberAst();
+      ast.member = variableList;
+      result = ast;
+    } else if (variableList.length == 1 && variableList.first is! int) {
+      VariableAst ast = VariableAst();
+      ast.name = variableList.first;
+      result = ast;
+    } else {
+      throw InvalidVariableName(
+          tokenEnum: token.token,
+          filename: filename,
+          line: token.line,
+          column: token.column);
+    }
+
+    token = tokens[index];
+
+    result.startPosition = position;
+    result.endPosition = token.position!;
+
+    return result;
+  }
+
+  ValueAst parseValue() {
+    ValueAst ast = ValueAst();
+    Token token = tokens[index];
+
+    if (token.token == TokenEnum.intValue) {
+      ast.type = ValueTypeAst.integer;
+    } else if (token.token == TokenEnum.stringValue) {
+      ast.type = ValueTypeAst.string;
+    } else {
+      throw Error();
+    }
+
+    ast.value = token.value!;
+
+    return ast;
+  }
+
+  OperatorAst parseOperator() {
+    Token token = tokens[index];
+    OperatorAst ast = OperatorAst();
+
+    if (token.token != TokenEnum.operator) {
+      throw InvalidOperator(
+          tokenEnum: token.token,
+          filename: filename,
+          column: token.column,
+          line: token.line);
+    }
+
+    ast.operator = token.value!;
+
+    return ast;
+  }
+
+  List<AstNode> parseIfCondition() {
+    List<AstNode> conditionList = [];
+
+    while (true) {
+      Token token = tokens[++index];
+
+      if (token.token == TokenEnum.closeCommandBalise) {
+        break;
+      } else if (token.token == TokenEnum.variableName) {
+        conditionList.add(parseVariable(position: token.position!));
+      } else if (token.token == TokenEnum.operator) {
+        conditionList.add(parseOperator());
+      } else if (token.token == TokenEnum.intValue ||
+          token.token == TokenEnum.stringValue) {
+        conditionList.add(parseValue());
+      } else {
+        throw InvalidIfCondition(
+            tokenEnum: token.token,
+            filename: filename,
+            line: token.line,
+            column: token.column);
+      }
+    }
+
+    return conditionList;
+  }
+
+  AstNode parseCondition({required int position}) {
+    ConditionAst ast = ConditionAst();
+    Token token = tokens[index];
+    bool condition = true;
+
+    ast.condition = parseIfCondition();
+
+    List<AstNode> children = [];
 
     while (true) {
       token = tokens[index];
@@ -115,76 +194,83 @@ class Parser {
       } else if (token.token == TokenEnum.openCommandBalise &&
           tokens[index + 1].token == TokenEnum.elseCommand &&
           tokens[index + 2].token == TokenEnum.closeCommandBalise) {
-        index++;
-        parseCondition(
-            node: node,
-            condition: false,
-            elseNode: result,
-            position: token.position!);
-        break;
+        index += 2;
+        ast.consequent = children;
+        children = [];
+        condition = false;
       } else if (token.token == TokenEnum.openVariableBalise) {
-        parseVariable(node: children, position: token.position!);
+        children.add(parseVariable(position: token.position!));
       } else if (token.token == TokenEnum.openCommandBalise) {
-        parseCommand(node: children, position: token.position!);
+        children.add(parseCommand(position: token.position!));
       } else if (token.token == TokenEnum.content) {
-        children.add({'type': 'text', 'value': token.value});
+        children.add(TextAst(value: token.value!));
       }
 
-      index++;
+      ++index;
     }
 
     token = tokens[index];
 
-    result['startPosition'] = position;
-    result['endPosition'] = token.position;
+    ast.startPosition = position;
+    ast.endPosition = token.position!;
 
     if (condition) {
-      result['trueCondition'] = children;
-      node.add(result);
+      ast.consequent = children;
     } else {
-      elseNode!['falseCondition'] = children;
+      ast.alternate = children;
     }
+
+    return ast;
   }
 
-  void parseFor(
-      {required List<Map<String, dynamic>> node, required int position}) {
-    index++;
-    Token token = tokens[index];
-    Map<String, dynamic> forCondition = {'type': 'for'};
+  ForAst parseFor({required int position}) {
+    ForAst ast = ForAst();
+    Token token = tokens[++index];
 
     if (token.token != TokenEnum.variableName) {
-      throw InvalidVariableName(tokenEnum: token.token);
+      throw InvalidVariableName(
+          tokenEnum: token.token,
+          filename: filename,
+          line: token.line,
+          column: token.column);
     }
 
-    forCondition['variable'] = token.value!;
+    ast.variable = token.value!;
 
-    index++;
-    token = tokens[index];
+    token = tokens[++index];
 
     if (token.token != TokenEnum.inCommand) {
-      throw InvalidForInCondition(tokenEnum: token.token);
+      throw InvalidForInCondition(
+          tokenEnum: token.token,
+          filename: filename,
+          line: token.line,
+          column: token.column);
     }
 
-    index++;
-    token = tokens[index];
+    token = tokens[++index];
 
     if (token.token != TokenEnum.variableName) {
-      throw InvalidVariableName(tokenEnum: token.token);
+      throw InvalidVariableName(
+          tokenEnum: token.token,
+          filename: filename,
+          line: token.line,
+          column: token.column);
     }
 
-    if (tokens[index + 1].token != TokenEnum.closeCommandBalise) {
-      throw InvalidCloseBalise(isCommand: true);
+    ast.collection = token.value!;
+
+    if (tokens[++index].token != TokenEnum.closeCommandBalise) {
+      throw InvalidCloseBalise(
+          isCommand: true,
+          filename: filename,
+          line: token.line,
+          column: token.column);
     }
 
-    index++;
-
-    forCondition['collection'] = token.value!;
-
-    List<Map<String, dynamic>> children = [];
+    List<AstNode> children = [];
 
     while (true) {
-      index++;
-      token = tokens[index];
+      token = tokens[++index];
 
       if (token.token == TokenEnum.openCommandBalise &&
           tokens[index + 1].token == TokenEnum.endForCommand &&
@@ -192,23 +278,24 @@ class Parser {
         index += 2;
         break;
       } else if (token.token == TokenEnum.openVariableBalise) {
-        parseVariable(node: children, position: token.position!);
+        children.add(parseVariable(position: token.position!));
       } else if (token.token == TokenEnum.content) {
-        children.add({'type': 'text', 'value': token.value});
+        children.add(TextAst(value: token.value!));
       } else if (token.token == TokenEnum.openCommandBalise) {
-        parseCommand(node: children, position: token.position!);
+        children.add(parseCommand(position: token.position!));
       } else {
-        throw InvalidBaliseToken();
+        throw InvalidBaliseToken(
+            filename: filename, line: token.line, column: token.column);
       }
     }
 
     token = tokens[index];
 
-    forCondition['startPosition'] = position;
-    forCondition['endPosition'] = token.position;
+    ast.startPosition = position;
+    ast.endPosition = token.position!;
 
-    forCondition['children'] = children;
+    ast.children = children;
 
-    node.add(forCondition);
+    return ast;
   }
 }

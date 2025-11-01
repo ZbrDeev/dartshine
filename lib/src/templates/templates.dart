@@ -15,8 +15,9 @@ import 'package:dartshine/src/templates/render/render.dart';
 /// ```
 class Template {
   List<String> sources = [];
+  final String path;
 
-  Template({required String path}) {
+  Template({required this.path}) {
     sources = readFile(path);
   }
 
@@ -25,13 +26,14 @@ class Template {
     final Lexer lexer = Lexer(sources: sources);
     lexer.lexer();
 
-    final Parser parser = Parser(tokens: lexer.tokens);
+    final Parser parser = Parser(tokens: lexer.tokens, filename: path);
     parser.parser();
 
     final Render render = Render(
-        parserResult: parser.results,
+        root: parser.root,
         variableList: variableList,
-        sources: sources);
+        sources: sources,
+        filename: path);
     render.render();
 
     return render.sources.join();

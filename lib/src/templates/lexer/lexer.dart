@@ -7,6 +7,9 @@ class Lexer {
   bool opentext = false;
   String guillemet = "";
 
+  int line = 1;
+  int column = 1;
+
   Lexer({required this.sources});
 
   void lexer() {
@@ -20,14 +23,25 @@ class Lexer {
         token += source;
         continue;
       } else if (opentext && (source == '"' || source == '\'')) {
-        tokens.add(Token(token: TokenEnum.stringValue, value: token));
+        tokens.add(Token(
+            token: TokenEnum.stringValue,
+            column: column,
+            line: line,
+            value: token));
         opentext = false;
         token = '';
         continue;
       }
 
+      if (source == '\n') {
+        ++line;
+        column = 1;
+        continue;
+      }
+
       if (source != ' ') {
         token += source;
+        ++column;
       }
 
       if (source == '<') {
@@ -37,11 +51,16 @@ class Lexer {
           if (token.isNotEmpty) {
             tokens.add(Token(
                 token: TokenEnum.content,
+                column: column,
+                line: line,
                 value: token.substring(0, token.length - 2)));
           }
 
-          tokens.add(
-              Token(token: TokenEnum.openCommandBalise, position: position));
+          tokens.add(Token(
+              token: TokenEnum.openCommandBalise,
+              column: column,
+              line: line,
+              position: position));
 
           token = '';
           isCommand = true;
@@ -49,8 +68,11 @@ class Lexer {
           ++i;
           position = i;
           token = '';
-          tokens.add(
-              Token(token: TokenEnum.closeCommandBalise, position: position));
+          tokens.add(Token(
+              token: TokenEnum.closeCommandBalise,
+              column: column,
+              line: line,
+              position: position));
           isCommand = null;
         } else {
           token += source;
@@ -60,19 +82,27 @@ class Lexer {
           if (token.isNotEmpty) {
             tokens.add(Token(
                 token: TokenEnum.content,
+                column: column,
+                line: line,
                 value: token.substring(0, token.length - 2)));
           }
 
           token = '';
-          tokens.add(
-              Token(token: TokenEnum.openVariableBalise, position: position));
+          tokens.add(Token(
+              token: TokenEnum.openVariableBalise,
+              column: column,
+              line: line,
+              position: position));
           isCommand = false;
         } else if (sources[i + 1] == '>') {
           ++i;
           position = i;
           token = '';
-          tokens.add(
-              Token(token: TokenEnum.closeVariableBalise, position: position));
+          tokens.add(Token(
+              token: TokenEnum.closeVariableBalise,
+              column: column,
+              line: line,
+              position: position));
           isCommand = null;
         } else {
           token += source;
@@ -82,55 +112,136 @@ class Lexer {
         opentext = true;
 
         token = '';
-      } else if (source == ' ') {
+      } else if (source == ' ' || source == '.' || source == '[') {
         if (token.trim().isNotEmpty) {
-          if (isCommand == true) {
+          if (source == '.' || source == '[') {
+            token = token.substring(0, token.length - 1);
+          }
+
+          if (isCommand == true && token.isNotEmpty) {
             lexeCommand(token);
             token = '';
-            continue;
-          } else if (isCommand == false) {
-            tokens.add(Token(token: TokenEnum.variableName, value: token));
+          } else if (isCommand == false && token.isNotEmpty) {
+            tokens.add(Token(
+                token: TokenEnum.variableName,
+                column: column,
+                line: line,
+                value: token));
             token = '';
-            continue;
           }
 
           token += source;
         }
+
+        if (source == '.') {
+          token = '';
+          tokens.add(Token(
+            token: TokenEnum.dot,
+            column: column,
+            line: line,
+          ));
+        } else if (source == '[') {
+          token = '';
+          tokens.add(Token(
+            token: TokenEnum.openBracket,
+            column: column,
+            line: line,
+          ));
+        }
+      } else if (source == ']') {
+        token = token.substring(0, token.length - 1);
+
+        if (int.tryParse(token) != null || double.tryParse(token) != null) {
+          tokens.add(Token(
+              token: TokenEnum.intValue,
+              column: column,
+              line: line,
+              value: token));
+        }
+
+        token = '';
+        tokens.add(Token(
+          token: TokenEnum.closeBracket,
+          column: column,
+          line: line,
+        ));
       }
     }
   }
 
   void lexeCommand(String token) {
+    token = token.trim();
+
+    if (token.isEmpty) {
+      return;
+    }
+
     if (token == 'for') {
-      tokens.add(Token(token: TokenEnum.forCommand));
+      tokens.add(Token(
+        token: TokenEnum.forCommand,
+        column: column,
+        line: line,
+      ));
     } else if (token == 'if') {
-      tokens.add(Token(token: TokenEnum.ifCommand));
+      tokens.add(Token(
+        token: TokenEnum.ifCommand,
+        column: column,
+        line: line,
+      ));
     } else if (token == 'else') {
-      tokens.add(Token(token: TokenEnum.elseCommand));
+      tokens.add(Token(
+        token: TokenEnum.elseCommand,
+        column: column,
+        line: line,
+      ));
     } else if (token == 'in') {
-      tokens.add(Token(token: TokenEnum.inCommand));
+      tokens.add(Token(
+        token: TokenEnum.inCommand,
+        column: column,
+        line: line,
+      ));
     } else if (token == 'endif') {
-      tokens.add(Token(token: TokenEnum.endIfCommand));
+      tokens.add(Token(
+        token: TokenEnum.endIfCommand,
+        column: column,
+        line: line,
+      ));
     } else if (token == 'endfor') {
-      tokens.add(Token(token: TokenEnum.endForCommand));
+      tokens.add(Token(
+        token: TokenEnum.endForCommand,
+        column: column,
+        line: line,
+      ));
     } else if (token == '==') {
-      tokens.add(Token(token: TokenEnum.operator, value: token));
+      tokens.add(Token(
+          token: TokenEnum.operator, column: column, line: line, value: token));
     } else if (token == '!=') {
-      tokens.add(Token(token: TokenEnum.operator, value: token));
+      tokens.add(Token(
+          token: TokenEnum.operator, column: column, line: line, value: token));
     } else if (token == '&&') {
-      tokens.add(Token(token: TokenEnum.operator, value: token));
+      tokens.add(Token(
+          token: TokenEnum.operator, column: column, line: line, value: token));
     } else if (token == '>') {
-      tokens.add(Token(token: TokenEnum.operator, value: token));
+      tokens.add(Token(
+          token: TokenEnum.operator, column: column, line: line, value: token));
     } else if (token == '<') {
-      tokens.add(Token(token: TokenEnum.operator, value: token));
+      tokens.add(Token(
+          token: TokenEnum.operator, column: column, line: line, value: token));
     } else if (token == '<=') {
-      tokens.add(Token(token: TokenEnum.operator, value: token));
+      tokens.add(Token(
+          token: TokenEnum.operator, column: column, line: line, value: token));
     } else if (token == '>=') {
-      tokens.add(Token(token: TokenEnum.operator, value: token));
+      tokens.add(Token(
+          token: TokenEnum.operator, column: column, line: line, value: token));
     } else if (int.tryParse(token) != null || double.tryParse(token) != null) {
-      tokens.add(Token(token: TokenEnum.intValue, value: token));
+      tokens.add(Token(
+          token: TokenEnum.intValue, column: column, line: line, value: token));
     } else {
-      tokens.add(Token(token: TokenEnum.variableName, value: token));
+      tokens.add(Token(
+          token: TokenEnum.variableName,
+          column: column,
+          line: line,
+          value: token));
     }
   }
 }

@@ -1,47 +1,59 @@
 import 'package:dartshine/src/forms/forms.dart';
-import 'package:dartshine/src/templates/lexer/token.dart';
+import 'package:dartshine/src/templates/parser/ast.dart';
 
 class Render {
-  final List<Map<String, dynamic>> parserResult;
+  final AstRoot root;
   final Map<String, dynamic> variableList;
   final List<String> sources;
+  final String filename;
   int padding = 0;
   bool error = false;
 
   Render(
-      {required this.parserResult,
+      {required this.root,
       required this.variableList,
-      required this.sources});
+      required this.sources,
+      required this.filename});
 
   void render() {
-    for (Map<String, dynamic> map in parserResult) {
+    for (AstNode node in root.nodes) {
       String data = '';
 
-      if (map['type'] == 'variable') {
-        data = variableRender(map['name']);
+      if (node is VariableAst) {
+        data = variableRender(node);
 
-        int startPosition = map['startPosition'];
-        int endPosition = map['endPosition'];
-
-        sources.replaceRange(
-            startPosition + padding, endPosition + 1 + padding, data.split(''));
-
-        padding += data.length - (endPosition + 1 - startPosition);
-      } else if (map['type'] == 'for') {
-        data = forRender(map);
-
-        int startPosition = map['startPosition'];
-        int endPosition = map['endPosition'];
+        int startPosition = node.startPosition;
+        int endPosition = node.endPosition;
 
         sources.replaceRange(
             startPosition + padding, endPosition + 1 + padding, data.split(''));
 
         padding += data.length - (endPosition + 1 - startPosition);
-      } else if (map['type'] == 'condition') {
-        data = conditionRender(map);
+      } else if (node is ForAst) {
+        data = forRender(node);
 
-        int startPosition = map['startPosition'];
-        int endPosition = map['endPosition'];
+        int startPosition = node.startPosition;
+        int endPosition = node.endPosition;
+
+        sources.replaceRange(
+            startPosition + padding, endPosition + 1 + padding, data.split(''));
+
+        padding += data.length - (endPosition + 1 - startPosition);
+      } else if (node is ConditionAst) {
+        data = conditionRender(node);
+
+        int startPosition = node.startPosition;
+        int endPosition = node.endPosition;
+
+        sources.replaceRange(
+            startPosition + padding, endPosition + 1 + padding, data.split(''));
+
+        padding += data.length - (endPosition + 1 - startPosition);
+      } else if (node is MemberAst) {
+        data = memberRender(node);
+
+        int startPosition = node.startPosition;
+        int endPosition = node.endPosition;
 
         sources.replaceRange(
             startPosition + padding, endPosition + 1 + padding, data.split(''));
@@ -51,9 +63,25 @@ class Render {
     }
   }
 
-  String variableRender(String variableName) {
+  String memberRender(MemberAst ast) {
+    dynamic value = variableList[ast.member.first];
+
+    for (int i = 1; i < ast.member.length; ++i) {
+      dynamic member = ast.member[i];
+
+      if (member is String) {
+        value = (value as Map<String, dynamic>)[member];
+      } else if (member is int) {
+        value = (value as List<dynamic>)[member];
+      }
+    }
+
+    return value.toString();
+  }
+
+  String variableRender(VariableAst ast) {
     StringBuffer data = StringBuffer();
-    dynamic value = variableList[variableName];
+    dynamic value = variableList[ast.name];
 
     if (value == null) {
       return "";
@@ -66,24 +94,24 @@ class Render {
     return data.toString();
   }
 
-  String forRender(Map<String, dynamic> forParserResult) {
+  String forRender(ForAst ast) {
     StringBuffer data = StringBuffer();
-    List<dynamic> values = variableList[forParserResult['collection']];
+    List<dynamic> values = variableList[ast.collection];
 
     for (dynamic value in values) {
-      variableList[forParserResult['variable']] = value;
+      variableList[ast.variable] = value;
 
-      List<Map<String, dynamic>> childrenList = forParserResult['children'];
+      List<AstNode> childrenList = ast.children;
 
-      for (Map<String, dynamic> children in childrenList) {
-        if (children['type'] == 'text') {
-          data.write(children['value']);
-        } else if (children['type'] == 'variable') {
-          String result = variableRender(children['name']);
-          data.write(result);
-        } else if (children['type'] == 'condition') {
-          String result = conditionRender(children);
-          data.write(result);
+      for (AstNode children in childrenList) {
+        if (children is TextAst) {
+          data.write(children.value);
+        } else if (children is VariableAst) {
+          data.write(variableRender(children));
+        } else if (children is ConditionAst) {
+          data.write(conditionRender(children));
+        } else if (children is MemberAst) {
+          data.write(memberRender(children));
         }
       }
     }
@@ -91,38 +119,33 @@ class Render {
     return data.toString();
   }
 
-  String conditionRender(Map<String, dynamic> conditionParserResult) {
+  String conditionRender(ConditionAst ast) {
     StringBuffer data = StringBuffer();
 
-    bool result =
-        parseConditionResult(conditionList: conditionParserResult['condition']);
+    List<AstNode> childrenList = [];
 
-    List<Map<String, dynamic>> childrenList = [];
-
-    if (result) {
-      childrenList = conditionParserResult['trueCondition'];
+    if (parseConditionResult(conditionList: ast.condition)) {
+      childrenList = ast.consequent;
     } else {
-      if (conditionParserResult.containsKey('falseCondition')) {
-        childrenList = conditionParserResult['falseCondition'];
-      }
+      childrenList = ast.alternate;
     }
 
-    for (Map<String, dynamic> children in childrenList) {
-      if (children['type'] == 'text') {
-        data.write(children['value']);
-      } else if (children['type'] == 'variable') {
-        String result = variableRender(children['name']);
-        data.write(result);
-      } else if (children['type'] == 'for') {
-        String result = forRender(children);
-        data.write(result);
+    for (AstNode children in childrenList) {
+      if (children is TextAst) {
+        data.write(children.value);
+      } else if (children is VariableAst) {
+        data.write(variableRender(children));
+      } else if (children is ForAst) {
+        data.write(forRender(children));
+      } else if (children is MemberAst) {
+        data.write(children);
       }
     }
 
     return data.toString();
   }
 
-  bool parseConditionResult({required List<Token> conditionList}) {
+  bool parseConditionResult({required List<AstNode> conditionList}) {
     bool result = false;
 
     if (conditionList.length < 3) {
@@ -132,12 +155,20 @@ class Render {
 
     List<dynamic> condition = [];
 
-    if (conditionList[0].token == TokenEnum.variableName) {
-      condition.add(parseVariableCondition(variable: conditionList[0]));
-    } else if (conditionList[0].token == TokenEnum.stringValue) {
-      condition.add(conditionList[0].value);
-    } else if (conditionList[0].token == TokenEnum.intValue) {
-      condition.add(int.parse(conditionList[0].value!));
+    if (conditionList[0] is VariableAst) {
+      condition.add(
+          parseVariableCondition(variable: (conditionList[0] as VariableAst)));
+    } else if (conditionList[0] is ValueAst) {
+      ValueAst valueAst = (conditionList[0] as ValueAst);
+
+      if (valueAst.type == ValueTypeAst.string) {
+        condition.add(valueAst.value);
+      } else if (valueAst.type == ValueTypeAst.integer) {
+        condition.add(int.parse(valueAst.value));
+      } else {
+        error = true;
+        return false;
+      }
     } else {
       error = true;
       return false;
@@ -145,12 +176,20 @@ class Render {
 
     condition.add(conditionList[1]);
 
-    if (conditionList[2].token == TokenEnum.variableName) {
-      condition.add(parseVariableCondition(variable: conditionList[2]));
-    } else if (conditionList[2].token == TokenEnum.stringValue) {
-      condition.add(conditionList[2].value);
-    } else if (conditionList[2].token == TokenEnum.intValue) {
-      condition.add(int.parse(conditionList[2].value!));
+    if (conditionList[2] is VariableAst) {
+      condition.add(
+          parseVariableCondition(variable: (conditionList[2] as VariableAst)));
+    } else if (conditionList[2] is ValueAst) {
+      ValueAst valueAst = (conditionList[0] as ValueAst);
+
+      if (valueAst.type == ValueTypeAst.string) {
+        condition.add(valueAst.value);
+      } else if (valueAst.type == ValueTypeAst.integer) {
+        condition.add(int.parse(valueAst.value));
+      } else {
+        error = true;
+        return false;
+      }
     } else {
       error = true;
       return false;
@@ -166,8 +205,8 @@ class Render {
     return result;
   }
 
-  dynamic parseVariableCondition({required Token variable}) {
-    dynamic result = variableList[variable.value];
+  dynamic parseVariableCondition({required VariableAst variable}) {
+    dynamic result = variableList[variable.name];
 
     return result;
   }
@@ -175,7 +214,7 @@ class Render {
   bool parseCondition({required List<dynamic> conditionList}) {
     bool result = false;
 
-    switch (conditionList[1].value) {
+    switch (conditionList[1].operator) {
       case '==':
         result = conditionList[0] == conditionList[2];
         break;

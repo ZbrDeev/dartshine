@@ -13,7 +13,10 @@ enum TokenEnum {
   content,
   operator,
   intValue,
-  stringValue
+  stringValue,
+  dot,
+  openBracket,
+  closeBracket
 }
 
 class Token {
@@ -21,5 +24,13 @@ class Token {
   final String? value;
   final int? position;
 
-  Token({required this.token, this.value, this.position});
+  final int line;
+  final int column;
+
+  Token(
+      {required this.token,
+      required this.column,
+      required this.line,
+      this.value,
+      this.position});
 }

@@ -6,7 +6,7 @@ environment:
   sdk: ^3.4.0
 
 dependencies:
-  dartshine: ^2.2.11
+  dartshine: ^2.3.0
 
 dev_dependencies:
   lints: ^3.0.0
