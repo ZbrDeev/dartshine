@@ -337,10 +337,10 @@ class Update extends Query<Update> with UpdateQuery<Update> {
 
     if (dbType == DbType.sqlite) {
       sqliteDb!.execute(
-          "UPDATE $tableName SET ${_queryDataString.toString()} ${_updateQueryMaker.toString()}");
+          "UPDATE $tableName SET ${_queryDataString.toString()} ${_queryMaker.toString()}");
     } else if (dbType == DbType.postgresql) {
       await postgresqlDb!.execute(
-          "UPDATE $tableName SET ${_queryDataString.toString()} ${_updateQueryMaker.toString()}");
+          "UPDATE $tableName SET ${_queryDataString.toString()} ${_queryMaker.toString()}");
     }
   }
 
@@ -349,7 +349,7 @@ class Update extends Query<Update> with UpdateQuery<Update> {
 
     if (dbType == DbType.sqlite) {
       final rows = sqliteDb!.select(
-          "UPDATE $tableName SET ${_queryDataString.toString()} ${_updateQueryMaker.toString()} RETURNING ${_updateQueryMaker.toString()}");
+          "UPDATE $tableName SET ${_queryDataString.toString()} ${_queryMaker.toString()} ${_updateQueryMaker.toString()}");
 
       for (final row in rows[0].entries) {
         result[row.key] = row.value;
@@ -357,7 +357,7 @@ class Update extends Query<Update> with UpdateQuery<Update> {
     } else if (dbType == DbType.postgresql) {
       result = (await postgresqlDb!
               .query(
-                  "UPDATE $tableName SET ${_queryDataString.toString()} ${_updateQueryMaker.toString()} RETURNING ${_updateQueryMaker.toString()}")
+                  "UPDATE $tableName SET ${_queryDataString.toString()} ${_queryMaker.toString()} ${_updateQueryMaker.toString()}")
               .single)
           .toMap();
     }
@@ -369,7 +369,7 @@ class Update extends Query<Update> with UpdateQuery<Update> {
 
     if (dbType == DbType.sqlite) {
       final rows = sqliteDb!.select(
-          "UPDATE $tableName SET ${_queryDataString.toString()} ${_updateQueryMaker.toString()} RETURNING ${_updateQueryMaker.toString()}");
+          "UPDATE $tableName SET ${_queryDataString.toString()} ${_queryMaker.toString()} ${_updateQueryMaker.toString()}");
 
       for (final row in rows) {
         Map<String, dynamic> result = {};
@@ -383,7 +383,7 @@ class Update extends Query<Update> with UpdateQuery<Update> {
     } else if (dbType == DbType.postgresql) {
       final rows = await postgresqlDb!
           .query(
-              "UPDATE $tableName SET ${_queryDataString.toString()} ${_updateQueryMaker.toString()} RETURNING ${_updateQueryMaker.toString()}")
+              "UPDATE $tableName SET ${_queryDataString.toString()} ${_queryMaker.toString()} ${_updateQueryMaker.toString()}")
           .toList();
 
       for (final row in rows) {
