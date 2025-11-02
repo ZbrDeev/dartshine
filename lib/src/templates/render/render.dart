@@ -1,3 +1,4 @@
+import 'package:dartshine/src/error/template_error.dart';
 import 'package:dartshine/src/forms/forms.dart';
 import 'package:dartshine/src/templates/parser/ast.dart';
 
@@ -7,7 +8,6 @@ class Render {
   final List<String> sources;
   final String filename;
   int padding = 0;
-  bool error = false;
 
   Render(
       {required this.root,
@@ -149,8 +149,10 @@ class Render {
     bool result = false;
 
     if (conditionList.length < 3) {
-      error = true;
-      return false;
+      throw InvalidOperator(
+          filename: filename,
+          column: conditionList[0].column,
+          line: conditionList[0].line);
     }
 
     List<dynamic> condition = [];
@@ -158,6 +160,8 @@ class Render {
     if (conditionList[0] is VariableAst) {
       condition.add(
           parseVariableCondition(variable: (conditionList[0] as VariableAst)));
+    } else if (conditionList[0] is MemberAst) {
+      condition.add(memberRender(conditionList[0] as MemberAst));
     } else if (conditionList[0] is ValueAst) {
       ValueAst valueAst = (conditionList[0] as ValueAst);
 
@@ -166,12 +170,14 @@ class Render {
       } else if (valueAst.type == ValueTypeAst.integer) {
         condition.add(int.parse(valueAst.value));
       } else {
-        error = true;
-        return false;
+        throw InvalidValueType(
+            filename: filename, column: valueAst.column, line: valueAst.line);
       }
     } else {
-      error = true;
-      return false;
+      throw InvalidValueType(
+          filename: filename,
+          column: conditionList[0].column,
+          line: conditionList[0].line);
     }
 
     condition.add(conditionList[1]);
@@ -179,27 +185,33 @@ class Render {
     if (conditionList[2] is VariableAst) {
       condition.add(
           parseVariableCondition(variable: (conditionList[2] as VariableAst)));
+    } else if (conditionList[2] is MemberAst) {
+      condition.add(memberRender(conditionList[2] as MemberAst));
     } else if (conditionList[2] is ValueAst) {
-      ValueAst valueAst = (conditionList[0] as ValueAst);
+      ValueAst valueAst = (conditionList[2] as ValueAst);
 
       if (valueAst.type == ValueTypeAst.string) {
         condition.add(valueAst.value);
       } else if (valueAst.type == ValueTypeAst.integer) {
         condition.add(int.parse(valueAst.value));
       } else {
-        error = true;
-        return false;
+        throw InvalidValueType(
+            filename: filename, column: valueAst.column, line: valueAst.line);
       }
     } else {
-      error = true;
-      return false;
+      throw InvalidValueType(
+          filename: filename,
+          column: conditionList[2].column,
+          line: conditionList[2].line);
     }
 
     try {
       result = parseCondition(conditionList: condition);
     } catch (e) {
-      error = true;
-      return false;
+      throw InvalidOperator(
+          filename: filename,
+          column: conditionList[1].column,
+          line: conditionList[1].line);
     }
 
     return result;

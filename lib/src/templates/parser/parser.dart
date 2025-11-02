@@ -18,6 +18,7 @@ class Parser {
         root.nodes.add(parseCommand(position: token.position!));
       } else if (token.token == TokenEnum.openVariableBalise) {
         root.nodes.add(parseVariable(position: token.position!));
+        ++index;
 
         if (tokens[index].token != TokenEnum.closeVariableBalise) {
           throw InvalidCloseBalise(
@@ -71,7 +72,11 @@ class Parser {
   }
 
   AstNode parseVariable({required int position}) {
-    Token token = tokens[++index];
+    if (position > 0) {
+      ++index;
+    }
+
+    Token token = tokens[index];
     AstNode result;
     List<dynamic> variableList = [];
 
@@ -107,8 +112,12 @@ class Parser {
 
     token = tokens[index];
 
-    result.startPosition = position;
-    result.endPosition = token.position!;
+    if (position > 0) {
+      result.startPosition = position;
+      result.endPosition = token.position!;
+    }
+
+    --index;
 
     return result;
   }
@@ -149,14 +158,15 @@ class Parser {
 
   List<AstNode> parseIfCondition() {
     List<AstNode> conditionList = [];
+    Token token = tokens[++index];
 
     while (true) {
-      Token token = tokens[++index];
+      token = tokens[index];
 
       if (token.token == TokenEnum.closeCommandBalise) {
         break;
       } else if (token.token == TokenEnum.variableName) {
-        conditionList.add(parseVariable(position: token.position!));
+        conditionList.add(parseVariable(position: 0));
       } else if (token.token == TokenEnum.operator) {
         conditionList.add(parseOperator());
       } else if (token.token == TokenEnum.intValue ||
@@ -169,12 +179,14 @@ class Parser {
             line: token.line,
             column: token.column);
       }
+
+      ++index;
     }
 
     return conditionList;
   }
 
-  AstNode parseCondition({required int position}) {
+  ConditionAst parseCondition({required int position}) {
     ConditionAst ast = ConditionAst();
     Token token = tokens[index];
     bool condition = true;
@@ -279,6 +291,7 @@ class Parser {
         break;
       } else if (token.token == TokenEnum.openVariableBalise) {
         children.add(parseVariable(position: token.position!));
+        ++index;
       } else if (token.token == TokenEnum.content) {
         children.add(TextAst(value: token.value!));
       } else if (token.token == TokenEnum.openCommandBalise) {

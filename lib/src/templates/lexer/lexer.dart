@@ -18,6 +18,7 @@ class Lexer {
 
     for (int i = 0; i < sources.length; i++) {
       String source = sources[i];
+      ++column;
 
       if (opentext && !(source == '"' || source == '\'')) {
         token += source;
@@ -41,7 +42,6 @@ class Lexer {
 
       if (source != ' ') {
         token += source;
-        ++column;
       }
 
       if (source == '<') {
