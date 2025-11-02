@@ -70,11 +70,11 @@ class DartshineMiddleware {
     if (request.uri.endsWith("/") && request.uri != "/") {
       return Response.redirect(
           request.uri.substring(0, request.uri.length - 1));
-    } else if (uri.contains(
-      RegExp(
-        r'\.(html|htm|css|js|json|xml|txt|csv|jpg|jpeg|png|gif|svg|webp|ico|bmp|tiff|tif|mp4|webm|ogg|mov|avi|mkv|mp3|wav|m4a|aac|woff|woff2|ttf|otf|eot|pdf|zip|rar)$',
-      ),
-    )) {
+    } else if (uri.toLowerCase().contains(
+          RegExp(
+            r'\.(html|htm|css|js|json|xml|txt|csv|jpg|jpeg|png|gif|svg|webp|ico|bmp|tiff|tif|mp4|webm|ogg|mov|avi|mkv|mp3|wav|m4a|aac|woff|woff2|ttf|otf|eot|pdf|zip|rar)$',
+          ),
+        )) {
       if (uri.startsWith('/')) {
         uri = uri.substring(1);
       }

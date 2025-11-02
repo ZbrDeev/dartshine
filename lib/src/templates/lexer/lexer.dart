@@ -133,14 +133,20 @@ class Lexer {
           token += source;
         }
 
-        if (source == '.') {
+        if (source == '.' &&
+            tokens.isNotEmpty &&
+            (tokens.last.token == TokenEnum.variableName ||
+                tokens.last.token == TokenEnum.closeBracket)) {
           token = '';
           tokens.add(Token(
             token: TokenEnum.dot,
             column: column,
             line: line,
           ));
-        } else if (source == '[') {
+        } else if (source == '[' &&
+            tokens.isNotEmpty &&
+            (tokens.last.token == TokenEnum.variableName ||
+                tokens.last.token == TokenEnum.closeBracket)) {
           token = '';
           tokens.add(Token(
             token: TokenEnum.openBracket,
