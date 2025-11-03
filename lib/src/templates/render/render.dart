@@ -138,7 +138,7 @@ class Render {
       } else if (children is ForAst) {
         data.write(forRender(children));
       } else if (children is MemberAst) {
-        data.write(children);
+        data.write(memberRender(children));
       }
     }
 

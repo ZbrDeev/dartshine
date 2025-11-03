@@ -72,7 +72,10 @@ class Parser {
   }
 
   AstNode parseVariable({required int position}) {
-    if (position > 0) {
+    int startPosition = 0;
+
+    if (tokens[index].token == TokenEnum.openVariableBalise) {
+      startPosition = tokens[index].position!;
       ++index;
     }
 
@@ -112,8 +115,8 @@ class Parser {
 
     token = tokens[index];
 
-    if (position > 0) {
-      result.startPosition = position;
+    if (token.token == TokenEnum.closeVariableBalise) {
+      result.startPosition = startPosition;
       result.endPosition = token.position!;
     }
 
