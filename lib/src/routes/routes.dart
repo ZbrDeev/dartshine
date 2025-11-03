@@ -91,8 +91,7 @@ class DartshineRoute {
         root = node.dynamicUrl!.nodes;
         node = node.dynamicUrl!;
       } else {
-        if (splittedPath.last.startsWith("<") &&
-            RegExp(r"^<[^>]*>$").hasMatch(splittedPath.last)) {
+        if (path.startsWith(":")) {
           node.dynamicUrl = RouteNode();
           node.dynamicUrl!.dynamicPath = path;
           root = node.dynamicUrl!.nodes;
@@ -105,8 +104,7 @@ class DartshineRoute {
       }
     }
 
-    if (splittedPath.last.startsWith("<") &&
-        RegExp(r"^<[^>]*>$").hasMatch(splittedPath.last)) {
+    if (splittedPath.last.startsWith(":")) {
       node.dynamicUrl = RouteNode();
       node.dynamicUrl!.dynamicPath = splittedPath.last;
       node.dynamicUrl!.route = url;
@@ -143,8 +141,7 @@ class DartshineRoute {
       } else if (node.dynamicUrl != null) {
         node = node.dynamicUrl!;
 
-        String dynamicPath =
-            node.dynamicPath!.substring(1, node.dynamicPath!.length - 1);
+        String dynamicPath = node.dynamicPath!.substring(1);
         dynamicPathValue[dynamicPath] = path;
       } else {
         return null;
