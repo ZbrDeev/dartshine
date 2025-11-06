@@ -1,5 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:archive/archive.dart';
+import 'package:dartshine/dartshine.dart';
+import 'package:es_compression/brotli.dart';
+import 'package:es_compression/zstd.dart';
 import '../serialization/struct.dart';
 
 /// Used to describe the HTTP request
@@ -77,6 +81,10 @@ class ParseHttpRequest {
   bool done = false;
   bool isHeaderParsed = false;
   HttpRequest? result;
+  bool isChunked = false;
+  List<String> chunkedMethod = [];
+  bool keepAlive = false;
+  Response response = Response(status: Status.internalServerError, headers: {});
 
   void parseHeader() {
     int index = -1;
@@ -92,8 +100,8 @@ class ParseHttpRequest {
     }
 
     if (index == -1) {
-      done = true;
-      return;
+      response = Response.status(status: Status.badRequest);
+      throw Error();
     }
 
     final String requestString = ascii.decode(request.sublist(0, index + 2));
@@ -143,16 +151,109 @@ class ParseHttpRequest {
     }
 
     if (headers.containsKey("Content-Length")) {
-      contentLength = int.parse(headers["Content-Length"]!);
+      contentLength = int.tryParse(headers["Content-Length"]!) ?? 0;
+    } else if (headers.containsKey("Transfer-Encoding")) {
+      chunkedMethod = headers["Transfer-Encoding"]!.split(",");
+
+      for (int i = 0; i < chunkedMethod.length; ++i) {
+        chunkedMethod[i] = chunkedMethod[i].trim();
+
+        if (chunkedMethod[i] == "chunked") {
+          isChunked = true;
+        }
+      }
+    }
+
+    if (headers.containsKey("Connection")) {
+      List<String> connectionList = headers["Connection"]!.split(",");
+
+      for (String connectionMethod in connectionList) {
+        connectionMethod = connectionMethod.trim();
+
+        if (connectionMethod == "close") {
+          keepAlive = false;
+          break;
+        } else if (connectionMethod == "keep-alive") {
+          keepAlive = true;
+          break;
+        }
+      }
     }
 
     result = HttpRequest(
         method, uri, httpVersion, Uint8List(0), headers, parameters);
   }
 
-  void parseBody() {
+  void parseBodyWithLength() {
     parsedSize += request.length;
     body.add(request);
+
+    if (parsedSize == contentLength) {
+      done = true;
+      result!.body = body.toBytes();
+      result!.parseCookieAndContentType();
+    }
+  }
+
+  void _parseBodyChunkedCompress() {
+    result!.body = body.toBytes();
+
+    for (String compressMethod in chunkedMethod) {
+      if (compressMethod == "chunked") {
+        break;
+      } else if (compressMethod == "gzip") {
+        final decoder = GZipDecoder();
+        result!.body = decoder.decodeBytes(result!.body);
+      } else if (compressMethod == "br") {
+        result!.body = Uint8List.fromList(brotli.decode(result!.body));
+      } else if (compressMethod == "zstd") {
+        result!.body = Uint8List.fromList(zstd.decode(result!.body));
+      }
+    }
+
+    result!.parseCookieAndContentType();
+  }
+
+  void parseBodyChunked() {
+    int index = 0;
+
+    while (index < request.length) {
+      List<String> chunkedSizeString = [];
+
+      while (request[index] != 13 && request[index + 1] != 10) {
+        int char = request[index];
+        chunkedSizeString.add(utf8.decode([char]));
+        ++index;
+      }
+
+      index += 2;
+
+      if (chunkedSizeString.isEmpty) {
+        response = Response.status(status: Status.lengthRequired);
+        throw Error();
+      }
+
+      int chunkedSize = int.parse(chunkedSizeString.join(), radix: 16);
+
+      body.add(request.sublist(index, index + chunkedSize));
+      index += chunkedSize + 2;
+
+      if (request.length < index) {
+        return;
+      }
+
+      if (request[index] == 48 &&
+          request[index + 1] == 13 &&
+          request[index + 2] == 10 &&
+          request[index + 3] == 13 &&
+          request[index + 4] == 10) {
+        done = true;
+        result!.body = body.toBytes();
+        _parseBodyChunkedCompress();
+        result!.parseCookieAndContentType();
+        break;
+      }
+    }
   }
 
   void parseRequest() {
@@ -170,12 +271,13 @@ class ParseHttpRequest {
       return;
     }
 
-    parseBody();
-
-    if (parsedSize == contentLength) {
-      done = true;
-      result!.body = body.toBytes();
-      result!.parseCookieAndContentType();
+    if (contentLength > 0) {
+      parseBodyWithLength();
+    } else if (isChunked) {
+      parseBodyChunked();
+    } else {
+      response = Response.status(status: Status.lengthRequired);
+      throw Error();
     }
   }
 }

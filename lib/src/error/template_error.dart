@@ -204,3 +204,23 @@ class InvalidValueType extends Error {
     return '$filename:$line:$column Expect integer value, string value or variable name';
   }
 }
+
+class InvalidKey extends Error {
+  final String filename;
+  final int column;
+  final int line;
+  final String variableName;
+  final String fieldName;
+
+  InvalidKey(
+      {required this.filename,
+      required this.column,
+      required this.line,
+      required this.variableName,
+      required this.fieldName});
+
+  @override
+  String toString() {
+    return '$filename:$line:$column Field $fieldName not found in $variableName';
+  }
+}

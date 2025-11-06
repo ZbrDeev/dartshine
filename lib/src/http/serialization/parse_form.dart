@@ -12,6 +12,11 @@ Map<String, String> parseFormUrlEncoding(String form) {
     List<String> keyValue = value.split("=");
     keyValue[0] = keyValue[0].trim();
 
+    if (keyValue.length < 2) {
+      parsedForm[keyValue[0]] = "";
+      continue;
+    }
+
     if (parsedForm.containsKey(keyValue[0])) {
       String value = parsedForm[keyValue[0]]!;
       value += ",${keyValue[1]}";

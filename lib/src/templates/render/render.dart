@@ -17,10 +17,8 @@ class Render {
 
   void render() {
     for (AstNode node in root.nodes) {
-      String data = '';
-
       if (node is VariableAst) {
-        data = variableRender(node);
+        String data = variableRender(node);
 
         int startPosition = node.startPosition;
         int endPosition = node.endPosition;
@@ -30,7 +28,7 @@ class Render {
 
         padding += data.length - (endPosition + 1 - startPosition);
       } else if (node is ForAst) {
-        data = forRender(node);
+        String data = forRender(node);
 
         int startPosition = node.startPosition;
         int endPosition = node.endPosition;
@@ -40,7 +38,7 @@ class Render {
 
         padding += data.length - (endPosition + 1 - startPosition);
       } else if (node is ConditionAst) {
-        data = conditionRender(node);
+        String data = conditionRender(node);
 
         int startPosition = node.startPosition;
         int endPosition = node.endPosition;
@@ -50,7 +48,14 @@ class Render {
 
         padding += data.length - (endPosition + 1 - startPosition);
       } else if (node is MemberAst) {
-        data = memberRender(node);
+        String data = memberRender(node).toString();
+
+        data = data
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
 
         int startPosition = node.startPosition;
         int endPosition = node.endPosition;
@@ -63,32 +68,51 @@ class Render {
     }
   }
 
-  String memberRender(MemberAst ast) {
+  dynamic memberRender(MemberAst ast) {
+    if (!variableList.containsKey(ast.member.first)) {
+      return "";
+    }
+
     dynamic value = variableList[ast.member.first];
 
     for (int i = 1; i < ast.member.length; ++i) {
-      dynamic member = ast.member[i];
+      try {
+        dynamic member = ast.member[i];
 
-      if (member is String) {
-        value = (value as Map<String, dynamic>)[member];
-      } else if (member is int) {
-        value = (value as List<dynamic>)[member];
+        if (member is String) {
+          value = (value as Map<String, dynamic>)[member];
+        } else if (member is int) {
+          value = (value as List<dynamic>)[member];
+        }
+      } catch (e) {
+        throw InvalidKey(
+            filename: filename,
+            column: ast.column,
+            line: ast.line,
+            variableName: ast.member.sublist(0, i).join("."),
+            fieldName: ast.member[i]);
       }
     }
 
-    return value.toString();
+    return value;
   }
 
   String variableRender(VariableAst ast) {
-    StringBuffer data = StringBuffer();
+    String data = "";
     dynamic value = variableList[ast.name];
 
     if (value == null) {
       return "";
     } else if (value is DartshineForms) {
-      data.write(value.toHtml());
+      data = value.toHtml();
     } else {
-      data.write(value);
+      data = value;
+      data = data
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
     }
 
     return data.toString();
@@ -111,7 +135,7 @@ class Render {
         } else if (children is ConditionAst) {
           data.write(conditionRender(children));
         } else if (children is MemberAst) {
-          data.write(memberRender(children));
+          data.write(memberRender(children).toString());
         }
       }
     }
@@ -138,7 +162,7 @@ class Render {
       } else if (children is ForAst) {
         data.write(forRender(children));
       } else if (children is MemberAst) {
-        data.write(memberRender(children));
+        data.write(memberRender(children).toString());
       }
     }
 

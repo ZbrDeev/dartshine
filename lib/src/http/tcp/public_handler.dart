@@ -23,12 +23,10 @@ class PublicHandler {
       response.body = body;
       response.createResponse();
       _client.write(response.response);
-      await _client.close();
     } else if (body is Uint8List) {
       response.createResponse();
       _client.write(response.response);
       _client.add(body);
-      await _client.close();
     } else {
       throw TypeError();
     }

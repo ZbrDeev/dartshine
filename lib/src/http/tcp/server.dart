@@ -27,9 +27,15 @@ class ServerMaker {
     ParseHttpRequest request = ParseHttpRequest();
 
     client.listen((data) async {
-      if (!request.done) {
-        request.request = data;
-        request.parseRequest();
+      try {
+        if (!request.done) {
+          request.request = data;
+          request.parseRequest();
+        }
+      } catch (e) {
+        client.write(request.response);
+        await client.close();
+        return;
       }
 
       if (request.done) {
@@ -42,6 +48,12 @@ class ServerMaker {
 
         PublicHandler handler = PublicHandler(client, request.result!);
         await onRequest(handler);
+
+        if (!request.keepAlive) {
+          await client.close();
+        }
+
+        return;
       }
     });
   }

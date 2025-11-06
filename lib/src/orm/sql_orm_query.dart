@@ -5,8 +5,22 @@ import 'package:sqlite3/sqlite3.dart';
 abstract class Query<T extends Query<T>> {
   final StringBuffer _queryMaker = StringBuffer();
 
-  T where(String query) {
+  T where({required String query, required List<dynamic> data}) {
     _queryMaker.write(" WHERE ");
+
+    for (int i = 0; i < data.length; ++i) {
+      dynamic queryData = data[i];
+
+      if (queryData is String) {
+        queryData = queryData.replaceAll("'", "''");
+        queryData = queryData.replaceAll("\\", "\\\\");
+
+        query = query.replaceFirst("?", "'$queryData'");
+      } else {
+        query = query.replaceFirst("?", queryData);
+      }
+    }
+
     _queryMaker.write(query);
 
     return this as T;
@@ -63,6 +77,11 @@ class InsertQuery<T extends InsertQuery<T>> {
   final List<String> _values = [];
 
   T value(String key, dynamic value) {
+    if (value is String) {
+      value = value.replaceAll("'", "''");
+      value = value.replaceAll("\\", "\\\\");
+    }
+
     _keys.add(key);
     _values.add(value is String ? "'$value'" : "$value");
 
@@ -82,6 +101,11 @@ mixin UpdateQuery<T extends UpdateQuery<T>> {
   final List<String> _values = [];
 
   T set(String key, dynamic value) {
+    if (value is String) {
+      value = value.replaceAll("'", "''");
+      value = value.replaceAll("\\", "\\\\");
+    }
+
     _keys.add(key);
     _values.add(value is String ? "'$value'" : value);
 

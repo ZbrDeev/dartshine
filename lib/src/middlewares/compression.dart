@@ -15,6 +15,7 @@ import 'package:dartshine/src/middlewares/middleware.dart';
 /// ```
 Future<Response> compress(
     HttpRequest request, MiddlewareNextFunction next) async {
+  // TODO: IMPLEMENT Q=X FOR PRIORITY
   Response response = await next(request);
 
   if (response.body is Uint8List || response.body is String) {
