@@ -17,7 +17,7 @@ abstract class Query<T extends Query<T>> {
 
         query = query.replaceFirst("?", "'$queryData'");
       } else {
-        query = query.replaceFirst("?", queryData);
+        query = query.replaceFirst("?", queryData.toString());
       }
     }
 
@@ -83,7 +83,7 @@ class InsertQuery<T extends InsertQuery<T>> {
     }
 
     _keys.add(key);
-    _values.add(value is String ? "'$value'" : "$value");
+    _values.add(value is String ? "'$value'" : value.toString());
 
     return this as T;
   }
@@ -107,7 +107,7 @@ mixin UpdateQuery<T extends UpdateQuery<T>> {
     }
 
     _keys.add(key);
-    _values.add(value is String ? "'$value'" : value);
+    _values.add(value is String ? "'$value'" : value.toString());
 
     return this as T;
   }

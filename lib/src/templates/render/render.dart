@@ -106,7 +106,7 @@ class Render {
     } else if (value is DartshineForms) {
       data = value.toHtml();
     } else {
-      data = value;
+      data = value.toString();
       data = data
           .replaceAll('&', '&amp;')
           .replaceAll('<', '&lt;')

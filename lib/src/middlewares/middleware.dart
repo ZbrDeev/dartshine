@@ -51,7 +51,6 @@ class DartshineMiddleware {
     final Response response = await _runMiddleware(request);
     await handler.send(response.status, response.headers, response.dataType,
         response.body, response.responseCookies);
-    _index = 0;
   }
 
   Future<Response> _runMiddleware(HttpRequest request) async {
@@ -60,6 +59,7 @@ class DartshineMiddleware {
       _index++;
       return middleware(request, _runMiddleware);
     } else {
+      _index = 0;
       return _onRequest(request);
     }
   }

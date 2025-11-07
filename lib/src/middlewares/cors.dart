@@ -14,12 +14,29 @@ import 'package:dartshine/src/middlewares/middleware.dart';
 /// }
 /// ```
 class DartshineCors {
-  String allowOrigin = "localhost:8000";
-  int maxAge = 0;
-  bool allowCredentials = true;
-  List<String> allowMethods = ["*"];
-  List<String> allowHeaders = ["*"];
-  List<String> exposeHeaders = ["*"];
+  String allowOrigin;
+  int maxAge;
+  bool allowCredentials;
+  List<String> allowMethods = [];
+  List<String> allowHeaders;
+  List<String> exposeHeaders;
+
+  DartshineCors(
+      {this.allowOrigin = "http://localhost:8000",
+      this.maxAge = 0,
+      this.allowCredentials = true,
+      List<Method> allowMethods = const [],
+      this.allowHeaders = const ["*"],
+      this.exposeHeaders = const ["*"]}) {
+    for (Method method in allowMethods) {
+      if (method == Method.all) {
+        this.allowMethods = ["*"];
+        break;
+      }
+
+      this.allowMethods.add(methodToString(method));
+    }
+  }
 
   Future<Response> handleCors(
       HttpRequest request, MiddlewareNextFunction next) async {

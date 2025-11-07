@@ -49,10 +49,7 @@ class ServerMaker {
         PublicHandler handler = PublicHandler(client, request.result!);
         await onRequest(handler);
 
-        if (!request.keepAlive) {
-          await client.close();
-        }
-
+        await client.close();
         return;
       }
     });

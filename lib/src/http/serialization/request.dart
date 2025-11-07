@@ -83,7 +83,6 @@ class ParseHttpRequest {
   HttpRequest? result;
   bool isChunked = false;
   List<String> chunkedMethod = [];
-  bool keepAlive = false;
   Response response = Response(status: Status.internalServerError, headers: {});
 
   void parseHeader() {
@@ -160,22 +159,6 @@ class ParseHttpRequest {
 
         if (chunkedMethod[i] == "chunked") {
           isChunked = true;
-        }
-      }
-    }
-
-    if (headers.containsKey("Connection")) {
-      List<String> connectionList = headers["Connection"]!.split(",");
-
-      for (String connectionMethod in connectionList) {
-        connectionMethod = connectionMethod.trim();
-
-        if (connectionMethod == "close") {
-          keepAlive = false;
-          break;
-        } else if (connectionMethod == "keep-alive") {
-          keepAlive = true;
-          break;
         }
       }
     }
