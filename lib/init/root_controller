@@ -2,7 +2,7 @@ import 'package:dartshine/dartshine.dart';
 
 class RootController extends DartshineController {
   @override
-  Response get(HttpRequest request) {
+  Future<Response> get(HttpRequest request) async {
     return Response.html(
         status: Status.ok,
         body: Template(path: 'assets/index.html')
