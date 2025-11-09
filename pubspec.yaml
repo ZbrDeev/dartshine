@@ -1,6 +1,6 @@
 name: dartshine
 description: A lightweight web framework for Dart, designed for clarity, clean syntax, and performance.
-version: 2.3.8
+version: 2.3.9
 repository: https://github.com/ZbrDeev/dartshine
 homepage: https://github.com/ZbrDeev/dartshine
 issue_tracker: https://github.com/ZbrDeev/dartshine/issues

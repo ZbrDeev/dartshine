@@ -5,6 +5,7 @@ import 'package:sqlite3/sqlite3.dart';
 abstract class Query<T extends Query<T>> {
   final StringBuffer _queryMaker = StringBuffer();
 
+  /// Add a WHERE clause
   T where({required String query, required List<dynamic> data}) {
     _queryMaker.write(" WHERE ");
 
@@ -26,6 +27,7 @@ abstract class Query<T extends Query<T>> {
     return this as T;
   }
 
+  /// Add a ORDER BY clause
   T orderBy(String query) {
     _queryMaker.write(" ORDER BY ");
     _queryMaker.write(query);
@@ -37,6 +39,7 @@ abstract class Query<T extends Query<T>> {
 mixin DeleteQuery<T extends DeleteQuery<T>> {
   final StringBuffer _deleteQueryMaker = StringBuffer();
 
+  /// Add a RETURNING clause
   T returning(List<String> query) {
     _deleteQueryMaker.write(" RETURNING ${query.join(",")}");
 
@@ -48,18 +51,21 @@ mixin SelectQuery<T extends SelectQuery<T>> {
   final StringBuffer _selectQueryMaker = StringBuffer();
   final StringBuffer _paginationQueryMaker = StringBuffer();
 
+  /// Specify which column we should retrieve.
   T column(List<String> query) {
     _selectQueryMaker.write(query.join(","));
 
     return this as T;
   }
 
+  /// Select all columns
   T all() {
     _selectQueryMaker.write(" * ");
 
     return this as T;
   }
 
+  /// Add pagination to your query.
   T pagination({required int limit, int offset = 0}) {
     _paginationQueryMaker.write("LIMIT $limit");
 
@@ -76,6 +82,7 @@ class InsertQuery<T extends InsertQuery<T>> {
   final List<String> _keys = [];
   final List<String> _values = [];
 
+  /// Add a value to your query
   T value(String key, dynamic value) {
     if (value is String) {
       value = value.replaceAll("'", "''");
@@ -88,6 +95,7 @@ class InsertQuery<T extends InsertQuery<T>> {
     return this as T;
   }
 
+  /// Add a RETURNING clause
   T returning(List<String> query) {
     _insertQueryMaker.write(" RETURNING ${query.join(",")}");
 
@@ -100,6 +108,7 @@ mixin UpdateQuery<T extends UpdateQuery<T>> {
   final List<String> _keys = [];
   final List<String> _values = [];
 
+  /// Add a value to your query
   T set(String key, dynamic value) {
     if (value is String) {
       value = value.replaceAll("'", "''");
@@ -112,6 +121,7 @@ mixin UpdateQuery<T extends UpdateQuery<T>> {
     return this as T;
   }
 
+  /// Add a RETURNING clause
   T returning(List<String> query) {
     _updateQueryMaker.write(" RETURNING ${query.join(",")}");
 
@@ -119,6 +129,12 @@ mixin UpdateQuery<T extends UpdateQuery<T>> {
   }
 }
 
+/// Used to delete a row.
+///
+/// ## Example
+/// ```dart
+/// await users.delete().where(query: "username = ?", data: ["john_doe"]).execute();
+/// ```
 class Delete extends Query<Delete> with DeleteQuery<Delete> {
   final String tableName;
   final DbType dbType;
@@ -131,6 +147,7 @@ class Delete extends Query<Delete> with DeleteQuery<Delete> {
       this.sqliteDb,
       this.postgresqlDb});
 
+  /// Execute without receiving the result
   void execute() async {
     if (dbType == DbType.sqlite) {
       sqliteDb!.execute(
@@ -140,8 +157,66 @@ class Delete extends Query<Delete> with DeleteQuery<Delete> {
           "DELETE FROM $tableName ${_queryMaker.toString()} ${_deleteQueryMaker.toString()}");
     }
   }
+
+  /// Execute and receive the first result
+  Future<Map<String, dynamic>> fetchOne() async {
+    Map<String, dynamic> result = {};
+
+    if (dbType == DbType.sqlite) {
+      final rows = sqliteDb!.select(
+          "DELETE FROM $tableName ${_queryMaker.toString()} ${_deleteQueryMaker.toString()}");
+
+      for (final row in rows[0].entries) {
+        result[row.key] = row.value;
+      }
+    } else if (dbType == DbType.postgresql) {
+      result = (await postgresqlDb!
+              .query(
+                  "DELETE FROM $tableName ${_queryMaker.toString()} ${_deleteQueryMaker.toString()}")
+              .single)
+          .toMap();
+    }
+    return result;
+  }
+
+  /// Execute and receive all results
+  Future<List<Map<String, dynamic>>> fetchAll() async {
+    List<Map<String, dynamic>> results = [];
+
+    if (dbType == DbType.sqlite) {
+      final rows = sqliteDb!.select(
+          "DELETE FROM $tableName ${_queryMaker.toString()} ${_deleteQueryMaker.toString()}");
+
+      for (final row in rows) {
+        Map<String, dynamic> result = {};
+
+        for (final rowMap in row.entries) {
+          result[rowMap.key] = rowMap.value;
+        }
+
+        results.add(result);
+      }
+    } else if (dbType == DbType.postgresql) {
+      final rows = await postgresqlDb!
+          .query(
+              "DELETE FROM $tableName ${_queryMaker.toString()} ${_deleteQueryMaker.toString()}")
+          .toList();
+
+      for (final row in rows) {
+        results.add(row.toMap());
+      }
+    }
+
+    return results;
+  }
 }
 
+/// Used to get data.
+///
+/// ## Example
+/// ```dart
+/// await users.get().all().where(query: "id = ?", data: [id]).fetchAll();
+/// ```
 class Get extends Query<Get> with SelectQuery<Get> {
   final String tableName;
   final DbType dbType;
@@ -181,6 +256,7 @@ class Get extends Query<Get> with SelectQuery<Get> {
     return result;
   }
 
+  /// Execute and receive the first result
   Future<Map<String, dynamic>> fetchOne() async {
     Map<String, dynamic> result = {};
 
@@ -206,6 +282,7 @@ class Get extends Query<Get> with SelectQuery<Get> {
     return result;
   }
 
+  /// Execute and receive all results
   Future<List<Map<String, dynamic>>> fetchAll() async {
     List<Map<String, dynamic>> results = [];
 
@@ -237,6 +314,18 @@ class Get extends Query<Get> with SelectQuery<Get> {
   }
 }
 
+/// Used to insert data.
+///
+/// ## Example
+/// ```dart
+/// await users.insert()
+/// .value("username", "john_doe")
+/// .value("name", "John Doe")
+/// .value("email", "john@test.com")
+/// .value("password", "password")
+/// .value("age", 32)
+/// .returning(["id"]).fetchOne();
+/// ```
 class Insert extends InsertQuery<Insert> {
   final String tableName;
   final DbType dbType;
@@ -265,6 +354,7 @@ class Insert extends InsertQuery<Insert> {
         .write("(${_keys.join(",")}) VALUES (${valuesString.toString()})");
   }
 
+  /// Execute without receiving the result
   void execute() async {
     putKeyValueData();
 
@@ -277,6 +367,7 @@ class Insert extends InsertQuery<Insert> {
     }
   }
 
+  /// Execute and receive the first result
   Future<Map<String, dynamic>> fetchOne() async {
     putKeyValueData();
 
@@ -300,6 +391,7 @@ class Insert extends InsertQuery<Insert> {
     return result;
   }
 
+  /// Execute and receive all results
   Future<List<Map<String, dynamic>>> fetchAll() async {
     putKeyValueData();
 
@@ -333,6 +425,15 @@ class Insert extends InsertQuery<Insert> {
   }
 }
 
+/// Used to get data.
+///
+/// ## Example
+/// ```dart
+/// await users.update()
+/// .set("name", "Johnny Doe")
+/// .set("age", 27)
+/// .execute();
+/// ```
 class Update extends Query<Update> with UpdateQuery<Update> {
   final String tableName;
   final DbType dbType;
@@ -356,6 +457,7 @@ class Update extends Query<Update> with UpdateQuery<Update> {
     }
   }
 
+  /// Execute without receiving the result
   void execute() async {
     putKeyValueData();
 
@@ -368,6 +470,7 @@ class Update extends Query<Update> with UpdateQuery<Update> {
     }
   }
 
+  /// Execute and receive the first result
   Future<Map<String, dynamic>> fetchOne() async {
     Map<String, dynamic> result = {};
 
@@ -388,6 +491,7 @@ class Update extends Query<Update> with UpdateQuery<Update> {
     return result;
   }
 
+  /// Execute and receive all results
   Future<List<Map<String, dynamic>>> fetchAll() async {
     List<Map<String, dynamic>> results = [];
 
