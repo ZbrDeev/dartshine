@@ -45,7 +45,7 @@ dart run
 The base port is 8000
 
 ## Documentation
-The documentation is under construction.
+You can find the documentation in the wiki of this repository [here](https://github.com/ZbrDeev/dartshine/wiki).
 
 ## Contributing
 Contributions are welcome! Feel free to open issues or send pull requests.
